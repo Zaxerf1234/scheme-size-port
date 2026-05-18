@@ -1,5 +1,6 @@
 package scheme.ui.dialogs;
 
+import arc.func.Cons3;
 import arc.func.Cons4;
 import arc.func.Func;
 import arc.scene.style.TextureRegionDrawable;
@@ -23,6 +24,7 @@ public class ContentSelectDialog<T extends UnlockableContent> extends ListDialog
     public static final float size = mobile ? 52f : 64f;
 
     public Cons4<Player, Team, T, Float> callback;
+    public Cons3<Player, Team, T> shortCallback;
     public Func<Float, String> format;
 
     public boolean showSlider;
@@ -70,6 +72,25 @@ public class ContentSelectDialog<T extends UnlockableContent> extends ListDialog
         addTeam();
     }
 
+    public ContentSelectDialog(String title, Seq<T> content, Boolean turn, Seq<Object> contain){
+        super(title);
+
+        Table table = new Table();
+        table.pane(pane -> {
+            pane.margin(0f, 24f, 0f, 24f);
+
+            content.each(item -> true, item -> {
+                pane.button(new TextureRegionDrawable(item.uiIcon), () -> {
+                    shortCallback.get(players.get(), teams.get(), item);
+                    if(!turn) hide();
+                }).size(size).tooltip(item.localizedName).update(i -> i.setChecked(contain.contains(i)));
+
+                if (++items % row == 0) pane.row();
+            });
+        });
+        addPlayer();
+    }
+
     public void select(boolean showSlider, boolean showPlayers, boolean showTeams, Cons4<Player, Team, T, Float> callback) {
         // in portrait orientation, ui elements may not fit into the screen
         boolean minimize = graphics.getWidth() < Scl.scl(mobile ? 900f : 1250f);
@@ -82,6 +103,20 @@ public class ContentSelectDialog<T extends UnlockableContent> extends ListDialog
 
         this.showSlider = showSlider;
         this.callback = callback;
+        show();
+    }
+
+    public void select(boolean showPlayers, boolean showTeams, Cons3<Player, Team, T> shortCallback) {
+        // in portrait orientation, ui elements may not fit into the screen
+        boolean minimize = graphics.getWidth() < Scl.scl(mobile ? 900f : 1250f);
+
+        players.pane.visible(showPlayers);
+        players.rebuild(minimize);
+
+        teams.pane.visible(showTeams);
+        teams.rebuild(minimize);
+
+        this.shortCallback = shortCallback;
         show();
     }
 

@@ -72,12 +72,12 @@ public class GammaAI extends AIController {
         cursor(Icon.diagonal, ai -> moveTo(ai, ai.aim)),
         follow(Icon.resize, ai -> moveTo(ai, ai.cache)),
         help(Icon.add, ai -> {
-            if (ai.target.unit() != null && ai.target.unit().plans.isEmpty() || !ai.target.unit().updateBuilding) return;
+            if (ai.target.unit() == null || ai.target.unit().plans.isEmpty() || !ai.target.unit().updateBuilding) return;
             ai.unit.addBuild(ai.target.unit().buildPlan());
         }),
         destroy(Icon.hammer, ai -> {}), // works through events
         repair(Icon.wrench, ai -> {
-            if (ai.target.unit() != null && ai.target.team().data().plans.isEmpty() || !ai.target.unit().updateBuilding) return;
+            if (ai.target.unit() == null || ai.target.team().data().plans.isEmpty() || !ai.target.unit().updateBuilding) return;
             BlockPlan plan = Seq.with(ai.target.team().data().plans).min(p -> ai.unit.dst(p.x * tilesize, p.y * tilesize));
             ai.unit.addBuild(new BuildPlan(plan.x, plan.y, plan.rotation, plan.block, plan.config));
         });

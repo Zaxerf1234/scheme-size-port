@@ -74,22 +74,22 @@ public class AdminsConfigDialog extends BaseDialog {
         int way = settings.getInt("adminsway", 0);
         if (way == 3) return detectTools();
         return new AdminsTools[] {
-                new Internal(), new SlashJs(), new Darkdustry()
+                new Internal(), new SlashJs(), new Mindurka()
         }[way];
     }
 
     public static String detectToolsName() {
         AdminsTools tools = detectTools();
-        if (tools instanceof Darkdustry) return "Darkdustry";
-        if (tools instanceof SlashJs) return "Slash Js";
-        return "Internal";
+        if (tools instanceof Mindurka) return bundle.get("admins.way.darkdustry.name");
+        if (tools instanceof SlashJs) return bundle.get("admins.way.slashjs.name ");
+        return bundle.get("admins.way.internal.name");
     }
 
     public static AdminsTools detectTools() {
         if (!net.client() || !ServerIntegration.schemeAvailable || (!player.admin && !always)) return new Internal();
 
         for (var entry : state.rules.tags.entries()) {
-            if (entry.key.startsWith("mdrk.")) return new Darkdustry();
+            if (entry.key.startsWith("mdrk.")) return new Mindurka();
         }
 
         return new Internal();

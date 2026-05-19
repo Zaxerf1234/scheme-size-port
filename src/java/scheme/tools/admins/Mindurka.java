@@ -14,14 +14,11 @@ import mindustry.world.blocks.storage.CoreBlock.CoreBuild;
 import scheme.tools.MessageQueue;
 import scheme.tools.RainbowTeam;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import static arc.Core.*;
 import static mindustry.Vars.*;
 import static scheme.SchemeVars.*;
 
-public class Darkdustry implements AdminsTools {
+public class Mindurka implements AdminsTools {
 
     public void manageRuleBool(boolean value, String name) {
         if (unusable()) return;

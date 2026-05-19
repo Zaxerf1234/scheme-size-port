@@ -5,6 +5,7 @@ import arc.scene.ui.layout.Table;
 import mindustry.gen.Call;
 import mindustry.gen.ClientSnapshotCallPacket;
 import mindustry.ui.dialogs.BaseDialog;
+import scheme.ServerIntegration;
 import scheme.tools.admins.*;
 import scheme.ui.TextSlider;
 
@@ -35,6 +36,10 @@ public class AdminsConfigDialog extends BaseDialog {
 
         cont.labelWrap("@admins.way").padTop(16f).width(320f).row();
         cont.table(table -> {
+            var auto = table.check(bundle.format("admins.way.auto.name", detectToolsName()), value -> this.way = 3)
+                    .checked(t -> this.way == 3).disabled(t -> !enabled).tooltip("@admins.way.auto.desc").left().get();
+            shown(() -> auto.setText(bundle.format("admins.way.auto.name", detectToolsName())));
+            table.row();
             addCheck(table, "@admins.way.internal", 0);
             addCheck(table, "@admins.way.slashjs", 1);
             addCheck(table, "@admins.way.darkdustry", 2);
@@ -66,8 +71,27 @@ public class AdminsConfigDialog extends BaseDialog {
 
     /** Made static so that it can be accessed before the dialog is created. */
     public static AdminsTools getTools() {
+        int way = settings.getInt("adminsway", 0);
+        if (way == 3) return detectTools();
         return new AdminsTools[] {
                 new Internal(), new SlashJs(), new Darkdustry()
-        }[settings.getInt("adminsway", 0)];
+        }[way];
+    }
+
+    public static String detectToolsName() {
+        AdminsTools tools = detectTools();
+        if (tools instanceof Darkdustry) return "Darkdustry";
+        if (tools instanceof SlashJs) return "Slash Js";
+        return "Internal";
+    }
+
+    public static AdminsTools detectTools() {
+        if (!net.client() || !ServerIntegration.schemeAvailable) return new Internal();
+
+        for (var entry : state.rules.tags.entries()) {
+            if (entry.key.startsWith("mdrk.")) return new Darkdustry();
+        }
+
+        return new Internal();
     }
 }

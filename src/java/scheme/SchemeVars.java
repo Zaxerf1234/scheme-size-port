@@ -100,7 +100,10 @@ public class SchemeVars {
                 Log.err("Failed to create invincible outlined icon", ex);
             }
         });
-        Events.on(EventType.WorldLoadEndEvent.class,event ->updateContent());
+        Events.on(EventType.WorldLoadEndEvent.class, event -> {
+            updateContent();
+            if (settings.getInt("adminsway", 0) == 3) admins = AdminsConfigDialog.detectTools();
+        });
         Events.on(EventType.ClientCreateEvent.class,event ->updateContent());
         // m_schematics is created in Main to prevent dual loading
         m_input = mobile ? new ModedMobileInput() : new ModedDesktopInput();

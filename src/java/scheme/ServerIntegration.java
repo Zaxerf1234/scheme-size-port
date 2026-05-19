@@ -35,6 +35,8 @@ public class ServerIntegration {
     /** Whether the player received subtitles from the server. */
     public static boolean hasData;
 
+    public static boolean schemeAvailable;
+
     public static void load() {
         // region Server
 
@@ -68,7 +70,7 @@ public class ServerIntegration {
         });
 
         netClient.addBinaryPacketHandler("schemesize.available", (data) -> {
-            
+            schemeAvailable = true;
         });
                 Events.on(WorldLoadEndEvent.class, e -> {
 
@@ -99,6 +101,7 @@ public class ServerIntegration {
         SSUsers.clear();
         hostID = -1;
         hasData = false;
+        schemeAvailable = false;
 
         // put the host's subtitle so that you do not copy the int map later
         SSUsers.put(player.id, settings.getString("subtitle"));

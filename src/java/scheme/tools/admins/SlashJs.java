@@ -1,5 +1,6 @@
 package scheme.tools.admins;
 
+import arc.math.Mathf;
 import arc.math.geom.Position;
 import arc.struct.Seq;
 import arc.util.Strings;
@@ -107,10 +108,11 @@ public class SlashJs implements AdminsTools {
 
     public void teleport(Position pos) {
         if (unusable()) return;
-        String conpos = "(player.con, " + pos.toString().replace("(", ""); // Vec2 and Point2 returns (x, y)
+        float x = Mathf.round(pos.getX()), y = Mathf.round(pos.getY());
         getPlayer(player);
         send("var spawned = player.unit().spawnedByCore; var unit = player.unit(); unit.spawnedByCore = false; player.clearUnit()");
-        send("unit.set@; Call.setPosition@; Call.setCameraPosition@", pos, conpos, conpos);
+        send("unit.set(@, @); Call.setPosition(player.con, @, @)", x, y, x, y);
+        send("Call.setCameraPosition(player.con, @, @)", x, y);
         send("player.unit(unit); unit.spawnedByCore = spawned");
     }
 

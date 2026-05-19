@@ -5,6 +5,7 @@ import arc.scene.ui.layout.Table;
 import mindustry.gen.Call;
 import mindustry.gen.ClientSnapshotCallPacket;
 import mindustry.ui.dialogs.BaseDialog;
+import scheme.ServerIntegration;
 import scheme.tools.admins.*;
 import scheme.ui.TextSlider;
 
@@ -14,9 +15,9 @@ import static scheme.SchemeVars.*;
 
 public class AdminsConfigDialog extends BaseDialog {
 
-    public boolean enabled = settings.getBool("adminsenabled", false);
-    public boolean always = settings.getBool("adminsalways", false);
-    public boolean strict = settings.getBool("adminsstrict", false);
+    public static boolean enabled = settings.getBool("adminsenabled", false);
+    public static boolean always = settings.getBool("adminsalways", false);
+    public static boolean strict = settings.getBool("adminsstrict", false);
     public int way = settings.getInt("adminsway", 0);
 
     public AdminsConfigDialog() {
@@ -35,6 +36,10 @@ public class AdminsConfigDialog extends BaseDialog {
 
         cont.labelWrap("@admins.way").padTop(16f).width(320f).row();
         cont.table(table -> {
+            var auto = table.check(bundle.format("admins.way.auto.name", detectToolsName()), value -> this.way = 3)
+                    .checked(t -> this.way == 3).disabled(t -> !enabled).tooltip("@admins.way.auto.desc").left().get();
+            shown(() -> auto.setText(bundle.format("admins.way.auto.name", detectToolsName())));
+            table.row();
             addCheck(table, "@admins.way.internal", 0);
             addCheck(table, "@admins.way.slashjs", 1);
             addCheck(table, "@admins.way.darkdustry", 2);
@@ -66,8 +71,27 @@ public class AdminsConfigDialog extends BaseDialog {
 
     /** Made static so that it can be accessed before the dialog is created. */
     public static AdminsTools getTools() {
+        int way = settings.getInt("adminsway", 0);
+        if (way == 3) return detectTools();
         return new AdminsTools[] {
-                new Internal(), new SlashJs(), new Darkdustry()
-        }[settings.getInt("adminsway", 0)];
+                new Internal(), new SlashJs(), new Mindurka()
+        }[way];
+    }
+
+    public static String detectToolsName() {
+        AdminsTools tools = detectTools();
+        if (tools instanceof Mindurka) return bundle.get("admins.way.darkdustry.name");
+        if (tools instanceof SlashJs) return bundle.get("admins.way.slashjs.name ");
+        return bundle.get("admins.way.internal.name");
+    }
+
+    public static AdminsTools detectTools() {
+        if (!net.client() || !ServerIntegration.schemeAvailable || (!player.admin && !always)) return new Internal();
+
+        for (var entry : state.rules.tags.entries()) {
+            if (entry.key.startsWith("mdrk.")) return new Mindurka();
+        }
+
+        return new Internal();
     }
 }

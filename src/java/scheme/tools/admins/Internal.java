@@ -28,6 +28,7 @@ import static scheme.SchemeVars.*;
 public class Internal implements AdminsTools {
 
     public void manageRuleBool(boolean value, String name) {
+        if (unusable()) return;
         try {
             Field fiel = Rules.class.getField(name);
             fiel.setBoolean(Vars.state.rules, value);
@@ -39,6 +40,7 @@ public class Internal implements AdminsTools {
     }
 
     public void manageRuleStr(String value, String name) {
+        if (unusable()) return;
         try {
             Field fiel = Rules.class.getField(name);
             fiel.set(Vars.state.rules, value);

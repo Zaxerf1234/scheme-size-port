@@ -15,9 +15,9 @@ import static scheme.SchemeVars.*;
 
 public class AdminsConfigDialog extends BaseDialog {
 
-    public boolean enabled = settings.getBool("adminsenabled", false);
-    public boolean always = settings.getBool("adminsalways", false);
-    public boolean strict = settings.getBool("adminsstrict", false);
+    public static boolean enabled = settings.getBool("adminsenabled", false);
+    public static boolean always = settings.getBool("adminsalways", false);
+    public static boolean strict = settings.getBool("adminsstrict", false);
     public int way = settings.getInt("adminsway", 0);
 
     public AdminsConfigDialog() {
@@ -86,7 +86,7 @@ public class AdminsConfigDialog extends BaseDialog {
     }
 
     public static AdminsTools detectTools() {
-        if (!net.client() || !ServerIntegration.schemeAvailable) return new Internal();
+        if (!net.client() || !ServerIntegration.schemeAvailable || (!player.admin && !always)) return new Internal();
 
         for (var entry : state.rules.tags.entries()) {
             if (entry.key.startsWith("mdrk.")) return new Darkdustry();

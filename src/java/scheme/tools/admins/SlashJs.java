@@ -21,10 +21,12 @@ import static scheme.SchemeVars.*;
 public class SlashJs implements AdminsTools {
 
     public void manageRuleBool(boolean value, String name) {
+        if (unusable()) return;
         send("Vars.state.rules." + name + " = " + value + "; Call.setRules(Vars.state.rules);");
     }
 
     public void manageRuleStr(String value, String name) {
+        if (unusable()) return;
         send("Vars.state.rules." + name + " = " + value + "; Call.setRules(Vars.state.rules);");
     }
 

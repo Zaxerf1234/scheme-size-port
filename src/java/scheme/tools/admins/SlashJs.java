@@ -30,6 +30,16 @@ public class SlashJs implements AdminsTools {
         send("Vars.state.rules." + name + " = " + value + "; Call.setRules(Vars.state.rules);");
     }
 
+    public void manageTeamRuleBool(int teamId, boolean value, String name) {
+        if (unusable()) return;
+        send("var tr = Vars.state.rules.teams.get(Team.all[" + teamId + "], () => new Rules.TeamRule()); tr." + name + " = " + value + "; Call.setRules(Vars.state.rules);");
+    }
+
+    public void manageTeamRuleStr(int teamId, String value, String name) {
+        if (unusable()) return;
+        send("var tr = Vars.state.rules.teams.get(Team.all[" + teamId + "], () => new Rules.TeamRule()); tr." + name + " = " + value + "; Call.setRules(Vars.state.rules);");
+    }
+
     public void manageUnit() {
         if (unusable()) return;
         unit.select(false, true, false, (target, team, unit, amount) -> {

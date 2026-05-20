@@ -28,6 +28,10 @@ public interface AdminsTools {
 
     void manageRuleStr(String value, String name);
 
+    void manageTeamRuleBool(int teamId, boolean value, String name);
+
+    void manageTeamRuleStr(int teamId, String value, String name);
+
     void manageUnit();
 
     void spawnUnits();

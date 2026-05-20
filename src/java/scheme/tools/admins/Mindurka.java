@@ -56,6 +56,12 @@ public class Mindurka implements AdminsTools {
         send("setrule", name, '"'+actualValue.toString()+'"');
     }
 
+    public void manageTeamRuleBool(int teamId, boolean value, String name) {
+    }
+
+    public void manageTeamRuleStr(int teamId, String value, String name) {
+    }
+
     public void manageUnit() {
         if (unusable()) return;
         unit.select(false, true, false, (target, team, unit, amount) -> {

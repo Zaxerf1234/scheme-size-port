@@ -43,11 +43,47 @@ public class Internal implements AdminsTools {
         if (unusable()) return;
         try {
             Field fiel = Rules.class.getField(name);
-            fiel.set(Vars.state.rules, value);
-
+            setFieldValue(fiel, Vars.state.rules, value);
             Call.setRules(Vars.state.rules);
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    public void manageTeamRuleBool(int teamId, boolean value, String name) {
+        if (unusable()) return;
+        try {
+            Team team = Team.all[teamId];
+            Rules.TeamRule tr = Vars.state.rules.teams.get(team);
+            Field fiel = Rules.TeamRule.class.getField(name);
+            fiel.setBoolean(tr, value);
+            Call.setRules(Vars.state.rules);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void manageTeamRuleStr(int teamId, String value, String name) {
+        if (unusable()) return;
+        try {
+            Team team = Team.all[teamId];
+            Rules.TeamRule tr = Vars.state.rules.teams.get(team);
+            Field fiel = Rules.TeamRule.class.getField(name);
+            setFieldValue(fiel, tr, value);
+            Call.setRules(Vars.state.rules);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void setFieldValue(Field fiel, Object target, String value) throws Exception {
+        Class<?> type = fiel.getType();
+        if (type == float.class) {
+            fiel.setFloat(target, Float.parseFloat(value));
+        } else if (type == int.class) {
+            fiel.setInt(target, Integer.parseInt(value));
+        } else {
+            fiel.set(target, value);
         }
     }
 

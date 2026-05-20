@@ -1,5 +1,6 @@
 package scheme.ui.dialogs;
 
+import arc.scene.event.FocusListener;
 import arc.scene.style.TextureRegionDrawable;
 import arc.scene.ui.*;
 import arc.scene.ui.layout.Cell;
@@ -19,6 +20,8 @@ import mindustry.ui.dialogs.BaseDialog;
 
 import static arc.Core.*;
 import static mindustry.Vars.*;
+import scheme.tools.admins.Mindurka;
+
 import static scheme.SchemeVars.admins;
 
 public class RuleSetterDialog extends BaseDialog {
@@ -114,18 +117,25 @@ public class RuleSetterDialog extends BaseDialog {
     }
 
     private void buildTeams(Table t, Rules rules) {
+        if (admins instanceof Mindurka) return;
         t.table(row -> {
             row.left();
             row.add("Team ID (0-255):").left().padRight(5);
-            row.field(customTeamId >= 0 ? String.valueOf(customTeamId) : "", s -> {
-                int id = Strings.parseInt(s, -1);
-                customTeamId = (id >= 0 && id <= 255) ? id : -1;
-                rebuild();
-            }).width(80f).valid(s -> {
+            TextField teamField = row.field(customTeamId >= 0 ? String.valueOf(customTeamId) : "", s -> {}).width(80f).valid(s -> {
                 if (s.isEmpty()) return true;
                 int v = Strings.parseInt(s, -1);
                 return v >= 0 && v <= 255;
-            }).left();
+            }).left().get();
+            teamField.addListener(new FocusListener() {
+                @Override
+                public void keyboardFocusChanged(FocusListener.FocusEvent event, arc.scene.Element element, boolean focused) {
+                    if (!focused) {
+                        int id = Strings.parseInt(teamField.getText(), -1);
+                        customTeamId = (id >= 0 && id <= 255) ? id : -1;
+                        rebuild();
+                    }
+                }
+            });
         }).pad(6).left().fillX();
         t.row();
 
@@ -150,26 +160,27 @@ public class RuleSetterDialog extends BaseDialog {
     }
 
     private void buildTeamSection(Table t, Team team, Rules.TeamRule tr, Rules rules) {
-        check(t, "rules.infiniteammo", tr.infiniteAmmo, v -> { tr.infiniteAmmo = v; syncRules(); });
-        check(t, "rules.cheat", tr.cheat, v -> { tr.cheat = v; syncRules(); });
-        check(t, "rules.fillitems", tr.fillItems, v -> { tr.fillItems = v; syncRules(); });
-        check(t, "rules.infiniteresources", tr.infiniteResources, v -> { tr.infiniteResources = v; syncRules(); });
-        check(t, "rules.rtsai", tr.rtsAi, v -> { tr.rtsAi = v; syncRules(); }).disabled(team == rules.defaultTeam);
-        integer(t, "rules.rtsminsquadsize", tr.rtsMinSquad, v -> { tr.rtsMinSquad = v; syncRules(); }).disabled(team == rules.defaultTeam || !tr.rtsAi);
-        integer(t, "rules.rtsmaxsquadsize", tr.rtsMaxSquad, v -> { tr.rtsMaxSquad = v; syncRules(); }).disabled(team == rules.defaultTeam || !tr.rtsAi);
-        number(t, "rules.rtsminattackweight", tr.rtsMinWeight, v -> { tr.rtsMinWeight = v; syncRules(); }).disabled(team == rules.defaultTeam || !tr.rtsAi);
-        check(t, "rules.buildai", tr.buildAi, v -> { tr.buildAi = v; syncRules(); });
-        number(t, "rules.buildaitier", tr.buildAiTier, v -> { tr.buildAiTier = v; syncRules(); }).disabled(!tr.buildAi);
-        number(t, "rules.blockhealthmultiplier", tr.blockHealthMultiplier, v -> { tr.blockHealthMultiplier = v; syncRules(); });
-        number(t, "rules.blockdamagemultiplier", tr.blockDamageMultiplier, v -> { tr.blockDamageMultiplier = v; syncRules(); });
-        number(t, "rules.buildspeedmultiplier", tr.buildSpeedMultiplier, v -> { tr.buildSpeedMultiplier = v; syncRules(); });
-        number(t, "rules.unitdamagemultiplier", tr.unitDamageMultiplier, v -> { tr.unitDamageMultiplier = v; syncRules(); });
-        number(t, "rules.unitcrashdamagemultiplier", tr.unitCrashDamageMultiplier, v -> { tr.unitCrashDamageMultiplier = v; syncRules(); });
-        number(t, "rules.unithealthmultiplier", tr.unitHealthMultiplier, v -> { tr.unitHealthMultiplier = v; syncRules(); });
-        number(t, "rules.unitbuildspeedmultiplier", tr.unitBuildSpeedMultiplier, v -> { tr.unitBuildSpeedMultiplier = v; syncRules(); });
-        number(t, "rules.unitcostmultiplier", tr.unitCostMultiplier, v -> { tr.unitCostMultiplier = v; syncRules(); });
-        number(t, "rules.unitminespeedmultiplier", tr.unitMineSpeedMultiplier, v -> { tr.unitMineSpeedMultiplier = v; syncRules(); });
-        number(t, "rules.extracorebuildradius", tr.extraCoreBuildRadius / tilesize, v -> { tr.extraCoreBuildRadius = v * tilesize; syncRules(); }).disabled(!rules.polygonCoreProtection);
+        int tid = team.id;
+        check(t, "rules.infiniteammo", tr.infiniteAmmo, v -> applyTeam(tid, "infiniteAmmo", v));
+        check(t, "rules.cheat", tr.cheat, v -> applyTeam(tid, "cheat", v));
+        check(t, "rules.fillitems", tr.fillItems, v -> applyTeam(tid, "fillItems", v));
+        check(t, "rules.infiniteresources", tr.infiniteResources, v -> applyTeam(tid, "infiniteResources", v));
+        check(t, "rules.rtsai", tr.rtsAi, v -> { applyTeam(tid, "rtsAi", v); rebuild(); }).disabled(team == rules.defaultTeam);
+        integer(t, "rules.rtsminsquadsize", tr.rtsMinSquad, v -> applyTeamInt(tid, "rtsMinSquad", v)).disabled(team == rules.defaultTeam || !tr.rtsAi);
+        integer(t, "rules.rtsmaxsquadsize", tr.rtsMaxSquad, v -> applyTeamInt(tid, "rtsMaxSquad", v)).disabled(team == rules.defaultTeam || !tr.rtsAi);
+        number(t, "rules.rtsminattackweight", tr.rtsMinWeight, v -> applyTeamFloat(tid, "rtsMinWeight", v)).disabled(team == rules.defaultTeam || !tr.rtsAi);
+        check(t, "rules.buildai", tr.buildAi, v -> { applyTeam(tid, "buildAi", v); rebuild(); });
+        number(t, "rules.buildaitier", tr.buildAiTier, v -> applyTeamFloat(tid, "buildAiTier", v)).disabled(!tr.buildAi);
+        number(t, "rules.blockhealthmultiplier", tr.blockHealthMultiplier, v -> applyTeamFloat(tid, "blockHealthMultiplier", v));
+        number(t, "rules.blockdamagemultiplier", tr.blockDamageMultiplier, v -> applyTeamFloat(tid, "blockDamageMultiplier", v));
+        number(t, "rules.buildspeedmultiplier", tr.buildSpeedMultiplier, v -> applyTeamFloat(tid, "buildSpeedMultiplier", v));
+        number(t, "rules.unitdamagemultiplier", tr.unitDamageMultiplier, v -> applyTeamFloat(tid, "unitDamageMultiplier", v));
+        number(t, "rules.unitcrashdamagemultiplier", tr.unitCrashDamageMultiplier, v -> applyTeamFloat(tid, "unitCrashDamageMultiplier", v));
+        number(t, "rules.unithealthmultiplier", tr.unitHealthMultiplier, v -> applyTeamFloat(tid, "unitHealthMultiplier", v));
+        number(t, "rules.unitbuildspeedmultiplier", tr.unitBuildSpeedMultiplier, v -> applyTeamFloat(tid, "unitBuildSpeedMultiplier", v));
+        number(t, "rules.unitcostmultiplier", tr.unitCostMultiplier, v -> applyTeamFloat(tid, "unitCostMultiplier", v));
+        number(t, "rules.unitminespeedmultiplier", tr.unitMineSpeedMultiplier, v -> applyTeamFloat(tid, "unitMineSpeedMultiplier", v));
+        number(t, "rules.extracorebuildradius", tr.extraCoreBuildRadius / tilesize, v -> applyTeamFloat(tid, "extraCoreBuildRadius", v * tilesize)).disabled(!rules.polygonCoreProtection);
     }
 
     private void buildAdvanced(Table t, Rules rules) {
@@ -187,6 +198,9 @@ public class RuleSetterDialog extends BaseDialog {
     public RuleSetterDialog() {
         super("Rule Setter");
         addCloseButton();
+        hidden(() -> {
+            if (scene.getKeyboardFocus() != null) scene.setKeyboardFocus(null);
+        });
     }
 
     @Override
@@ -254,7 +268,6 @@ public class RuleSetterDialog extends BaseDialog {
         String label = bundle.has(key) ? bundle.get(key) : key;
         Cell<CheckBox> cell = t.check(label, value, val -> {
             onChange.get(val);
-            rebuild();
         }).pad(6).left();
         t.row();
         return new FieldCell(cell);
@@ -267,10 +280,16 @@ public class RuleSetterDialog extends BaseDialog {
         Cell<Table> cell = t.table(row -> {
             row.left();
             row.add(label).left().padRight(5);
-            row.field(Strings.autoFixed(value, 2), s -> {
-                float f = Strings.parseFloat(s, value);
-                onChange.get(f);
-            }).width(120f).valid(Strings::canParseFloat).left();
+            TextField field = row.field(Strings.autoFixed(value, 2), s -> {}).width(120f).valid(Strings::canParseFloat).left().get();
+            field.addListener(new FocusListener() {
+                @Override
+                public void keyboardFocusChanged(FocusListener.FocusEvent event, arc.scene.Element element, boolean focused) {
+                    if (!focused && field.isValid()) {
+                        float f = Strings.parseFloat(field.getText(), value);
+                        onChange.get(f);
+                    }
+                }
+            });
         }).pad(6).left().fillX();
         t.row();
         return new FieldCell(cell);
@@ -283,10 +302,16 @@ public class RuleSetterDialog extends BaseDialog {
         Cell<Table> cell = t.table(row -> {
             row.left();
             row.add(label).left().padRight(5);
-            row.field(String.valueOf(value), s -> {
-                int i = Strings.parseInt(s, value);
-                onChange.get(i);
-            }).width(120f).valid(Strings::canParseInt).left();
+            TextField field = row.field(String.valueOf(value), s -> {}).width(120f).valid(Strings::canParseInt).left().get();
+            field.addListener(new FocusListener() {
+                @Override
+                public void keyboardFocusChanged(FocusListener.FocusEvent event, arc.scene.Element element, boolean focused) {
+                    if (!focused && field.isValid()) {
+                        int i = Strings.parseInt(field.getText(), value);
+                        onChange.get(i);
+                    }
+                }
+            });
         }).pad(6).left().fillX();
         t.row();
         return new FieldCell(cell);
@@ -327,18 +352,28 @@ public class RuleSetterDialog extends BaseDialog {
 
     private void applyFloat(String field, float value) {
         admins.manageRuleStr(String.valueOf(value), field);
-        rebuild();
     }
 
     private void applyInt(String field, int value) {
         admins.manageRuleStr(String.valueOf(value), field);
+    }
+
+    private void applyTeam(int teamId, String field, boolean value) {
+        admins.manageTeamRuleBool(teamId, value, field);
         rebuild();
+    }
+
+    private void applyTeamFloat(int teamId, String field, float value) {
+        admins.manageTeamRuleStr(teamId, String.valueOf(value), field);
+    }
+
+    private void applyTeamInt(int teamId, String field, int value) {
+        admins.manageTeamRuleStr(teamId, String.valueOf(value), field);
     }
 
     private void syncRules() {
         try {
             Call.setRules(Vars.state.rules);
-            rebuild();
         } catch (Exception ignored) {}
     }
 

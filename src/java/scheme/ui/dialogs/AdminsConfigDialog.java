@@ -40,9 +40,8 @@ public class AdminsConfigDialog extends BaseDialog {
                     .checked(t -> this.way == 3).disabled(t -> !enabled).tooltip("@admins.way.auto.desc").left().get();
             shown(() -> auto.setText(bundle.format("admins.way.auto.name", detectToolsName())));
             table.row();
-            addCheck(table, "@admins.way.internal", 0);
-            addCheck(table, "@admins.way.slashjs", 1);
-            addCheck(table, "@admins.way.darkdustry", 2);
+            for(int i = 0; i < AdminsTools.implementations.length; i++)
+                addCheck(table, "@admins.way." + AdminsTools.implementations[i].keyName(), i);
         }).left().row();
 
         cont.labelWrap("@admins.always").padTop(16f).width(320f).row();
@@ -73,24 +72,24 @@ public class AdminsConfigDialog extends BaseDialog {
     public static AdminsTools getTools() {
         int way = settings.getInt("adminsway", 0);
         if (way == 3) return detectTools();
-        return new AdminsTools[] {
-                new Internal(), new SlashJs(), new Mindurka()
-        }[way];
+        return AdminsTools.implementations[way];
     }
 
     public static String detectToolsName() {
-        AdminsTools tools = detectTools();
-        if (tools instanceof Mindurka) return bundle.get("admins.way.darkdustry.name");
-        if (tools instanceof SlashJs) return bundle.get("admins.way.slashjs.name ");
-        return bundle.get("admins.way.internal.name");
+        return bundle.get("admins.way." + detectTools().keyName() + ".name");
     }
 
     public static AdminsTools detectTools() {
         if (!net.client() || !ServerIntegration.schemeAvailable || (!player.admin && !always)) return new Internal();
 
+
+        // custom depends
         for (var entry : state.rules.tags.entries()) {
             if (entry.key.startsWith("mdrk.")) return new Mindurka();
         }
+
+        // server name depends
+        if (serverUtils.serverNameEqual("Mindurka")) return new Mindurka();
 
         return new Internal();
     }

@@ -22,6 +22,8 @@ import static mindustry.Vars.*;
 
 public interface AdminsTools {
 
+    AdminsTools[] implementations = { new Internal(), new SlashJs(), new Mindurka() };
+
     String disabled = bundle.format("admins.notenabled");
     String unavailable = bundle.format("admins.notavailable");
     String restricted = bundle.format("admins.restricted");
@@ -33,6 +35,8 @@ public interface AdminsTools {
         }
         return false;
     }
+
+    String keyName();
 
     void manageRuleBool(boolean value, String name);
 

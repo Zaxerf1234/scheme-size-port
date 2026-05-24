@@ -46,3 +46,5 @@ body:
           required: true
         - label: This feature does not already exist in the latest version
           required: true
+        - label: This feature is not cheat
+          required: true

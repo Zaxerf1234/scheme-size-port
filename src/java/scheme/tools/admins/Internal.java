@@ -27,6 +27,8 @@ import static scheme.SchemeVars.*;
 
 public class Internal implements AdminsTools {
 
+    public String keyName() { return "internal"; }
+
     public void manageRuleBool(boolean value, String name) {
         if (unusable()) return;
         try {

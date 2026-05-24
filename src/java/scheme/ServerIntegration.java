@@ -8,6 +8,7 @@ import arc.util.Time;
 import mindustry.game.EventType.*;
 import mindustry.gen.Call;
 import mindustry.io.JsonIO;
+import scheme.tools.DisabledTools;
 
 import static arc.Core.*;
 import static mindustry.Vars.*;
@@ -47,8 +48,15 @@ public class ServerIntegration {
 
         netServer.addPacketHandler("MySubtitle", (target, args) -> {
             SSUsers.put(target.id, args);
-            Call.clientPacketReliable("Subtitles", JsonIO.write(SSUsers));
+            IntMap<String> single = new IntMap<>(1);
+            single.put(target.id, args);
+            Call.clientPacketReliable("Subtitles", JsonIO.write(single));
+
+            if (SSUsers.size > 1) {
+                Call.clientPacketReliable(target.con, "Subtitles", JsonIO.write(SSUsers));
+            }
         });
+
         netServer.addBinaryPacketHandler("schemesize.available", (player, data) -> {
             Call.clientBinaryPacketReliable(player.con, "schemesize.available", data);
         });
@@ -65,14 +73,23 @@ public class ServerIntegration {
         });
 
         netClient.addPacketHandler("Subtitles", args -> {
-            SSUsers = JsonIO.read(IntMap.class, args);
+            IntMap<String> received = JsonIO.read(IntMap.class, args);
+            for (var entry : received) {
+                if (entry.value == null || entry.value.isEmpty()) SSUsers.remove(entry.key);
+                else SSUsers.put(entry.key, entry.value);
+            }
             hasData = true;
         });
 
         netClient.addBinaryPacketHandler("schemesize.available", (data) -> {
             schemeAvailable = true;
+            DisabledTools.clear();
+            DisabledTools.set(data);
         });
-                Events.on(WorldLoadEndEvent.class, e -> {
+
+        Events.on(WorldLoadEndEvent.class, e -> {
+            if(!net.client())DisabledTools.clear();
+            initHost();
 
             Runnable[] task = new Runnable[1];
 
@@ -102,9 +119,15 @@ public class ServerIntegration {
         hostID = -1;
         hasData = false;
         schemeAvailable = false;
+        DisabledTools.clear();
+    }
 
-        // put the host's subtitle so that you do not copy the int map later
-        SSUsers.put(player.id, settings.getString("subtitle"));
+    /** Called after world load when player.id is assigned. */
+    public static void initHost() {
+        if (!net.client()) {
+            hasData = true;
+            SSUsers.put(player.id, settings.getString("subtitle"));
+        }
     }
 
     /** Returns whether the user with the given id is using a mod. */
@@ -115,12 +138,14 @@ public class ServerIntegration {
     /** Returns the user type with the given id: host, no data, mod or vanilla. */
     public static String type(int id) {
         if (hostID == id) return "trace.type.host";
-        return !hasData && net.client() ? "trace.type.nodata" : isModded(id) ? "trace.type.mod" : "trace.type.vanilla";
+        if (!hasData && net.client()) return "trace.type.nodata";
+        return isModded(id) ? "trace.type.mod" : "trace.type.vanilla";
     }
 
     /** Returns the user type with subtitle. */
     public static String tooltip(int id) {
         if (player.id == id) return "@trace.type.self";
-        return bundle.get(type(id)) + (isModded(id) ? "\n" + SSUsers.get(id) : "");
+        String sub = SSUsers.get(id);
+        return bundle.get(type(id)) + (sub != null ? "\n" + sub : "");
     }
 }

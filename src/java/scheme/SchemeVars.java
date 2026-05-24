@@ -58,6 +58,8 @@ public class SchemeVars {
     public static ShortcutFragment shortfrag;
     public static CoreInfoFragment corefrag;
 
+    public static ServerUtils serverUtils;
+
     public static void load() {
         Events.on(EventType.ClientLoadEvent.class, e -> {
             try {
@@ -133,7 +135,10 @@ public class SchemeVars {
         shortfrag = new ShortcutFragment();
         corefrag = new CoreInfoFragment();
 
+        serverUtils = new ServerUtils();
+
         updateContent();
+        initContent();
     }
     private static void updateContent(){
 
@@ -143,6 +148,9 @@ public class SchemeVars {
         unit = new ContentSelectDialog<>("@select.unit", content.units(), 0, 100, 1, value -> value == 0 ? "@select.unit.clear" : bundle.format("select.units", value));
         effect = new ContentSelectDialog<>("@select.effect", content.statusEffects(), 0, 500 * 3600, 60, value -> value == 0 ? "@select.effect.clear" : bundle.format("select.seconds", value / 60f));
         item = new ContentSelectDialog<>("@select.item", content.items(), -1000000, 1000000, 500, value -> value == 0 ? "@select.item.clear" : bundle.format("select.items", UI.formatAmount(value.longValue())));
+    }
+    private  static void initContent(){
+        serverUtils.init();
     }
 
 }

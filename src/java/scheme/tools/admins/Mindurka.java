@@ -20,6 +20,8 @@ import static scheme.SchemeVars.*;
 
 public class Mindurka implements AdminsTools {
 
+    public String keyName() { return "darkdustry"; }
+
     public void manageRuleBool(boolean value, String name) {
         if (unusable()) return;
         send("setrule", name, Boolean.toString(value));

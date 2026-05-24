@@ -87,8 +87,12 @@ public class AISelectDialog extends ListDialog {
         ai = null;
     }
 
-    public void gotoppl(Player player) {
-        players.set(player);
+    public void gotoppl(Player target) {
+        if (!(ai instanceof GammaAI)) {
+            ai = new GammaAI();
+            ai.unit(player.unit());
+        }
+        players.set(target);
         ((GammaAI) ai).cache();
     }
 

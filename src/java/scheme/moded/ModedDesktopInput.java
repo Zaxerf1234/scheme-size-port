@@ -20,6 +20,7 @@ import mindustry.input.*;
 import mindustry.input.Placement.NormalizeDrawResult;
 import mindustry.input.Placement.NormalizeResult;
 import mindustry.gen.Mechc;
+import scheme.tools.DisabledTools;
 import mindustry.world.Block;
 import mindustry.input.InputHandler.*;
 import mindustry.world.blocks.power.PowerNode;
@@ -55,7 +56,7 @@ public class ModedDesktopInput extends DesktopInput implements ModedInputHandler
 
     @Override
     protected void flushPlans(Seq<BuildPlan> plans) {
-        if (m_schematics.isCursed(plans)) admins.flush(plans);
+        if (m_schematics.isCursed(plans) && !admins.isRestricted(DisabledTools.FLUSH)) admins.flush(plans);
         else super.flushPlans(plans);
     }
 
@@ -207,14 +208,14 @@ public class ModedDesktopInput extends DesktopInput implements ModedInputHandler
     public void buildInput() {
 
         if(Core.input.keyTap(SBinding.aiBind)) ai.show();
-        if(Core.input.keyTap(SBinding.coreBind)) admins.placeCore();
-        if(Core.input.keyTap(SBinding.despawnBind)) admins.despawn();
-        if(Core.input.keyTap(SBinding.effectBind)) admins.manageEffect();
-        if(Core.input.keyTap(SBinding.itemBind)) admins.manageItem();
-        if(Core.input.keyTap(SBinding.teamBind)) admins.manageTeam();
-        if(Core.input.keyTap(SBinding.unitBind)) admins.manageUnit();
-        if(Core.input.keyTap(SBinding.unitSpawnBind)) admins.spawnUnits();
-        if(Core.input.keyTap(SBinding.teleportBind)) admins.teleport();
+        if(Core.input.keyTap(SBinding.coreBind) && !admins.isRestricted(DisabledTools.CORE)) admins.placeCore();
+        if(Core.input.keyTap(SBinding.despawnBind) && !admins.isRestricted(DisabledTools.DESPAWN)) admins.despawn();
+        if(Core.input.keyTap(SBinding.effectBind) && !admins.isRestricted(DisabledTools.EFFECT)) admins.manageEffect();
+        if(Core.input.keyTap(SBinding.itemBind) && !admins.isRestricted(DisabledTools.ITEM)) admins.manageItem();
+        if(Core.input.keyTap(SBinding.teamBind) && !admins.isRestricted(DisabledTools.TEAM)) admins.manageTeam();
+        if(Core.input.keyTap(SBinding.unitBind) && !admins.isRestricted(DisabledTools.SPAWN)) admins.manageUnit();
+        if(Core.input.keyTap(SBinding.unitSpawnBind) && !admins.isRestricted(DisabledTools.SPAWN)) admins.spawnUnits();
+        if(Core.input.keyTap(SBinding.teleportBind) && !admins.isRestricted(DisabledTools.TELEPORT)) admins.teleport();
         if(Core.input.keyTap(SBinding.deletePLayer)) admins.deletePlyaer();;
         if (!hudfrag.building.fliped) build.setMode(Mode.none);
         if (build.mode == Mode.none) return;
@@ -244,7 +245,7 @@ public class ModedDesktopInput extends DesktopInput implements ModedInputHandler
                 build.plan.addAll(linePlans);
             });
 
-            if (build.mode == Mode.brush) admins.brush(cursorX, cursorY, build.size);
+            if (build.mode == Mode.brush && !admins.isRestricted(DisabledTools.BRUSH)) admins.brush(cursorX, cursorY, build.size);
 
             lastX = cursorX;
             lastY = cursorY;
@@ -257,7 +258,7 @@ public class ModedDesktopInput extends DesktopInput implements ModedInputHandler
                 if (build.mode == Mode.pick) tile.select(cursorX, cursorY);
                 if (build.mode == Mode.edit) {
                     NormalizeResult result = Placement.normalizeArea(buildX, buildY, cursorX, cursorY, 0, false, maxSchematicSize);
-                    admins.fill(result.x, result.y, result.x2, result.y2);
+                    if (!admins.isRestricted(DisabledTools.FILL)) admins.fill(result.x, result.y, result.x2, result.y2);
                 }
             } else build.resize(input.axis(Binding.zoom));
         }

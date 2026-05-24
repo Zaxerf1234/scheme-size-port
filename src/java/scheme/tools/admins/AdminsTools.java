@@ -12,6 +12,7 @@ import mindustry.gen.Groups;
 import mindustry.gen.Player;
 import mindustry.type.Item;
 import mindustry.type.UnitType;
+import scheme.tools.DisabledTools;
 import scheme.tools.PositionBuild;
 
 import java.awt.*;
@@ -21,8 +22,21 @@ import static mindustry.Vars.*;
 
 public interface AdminsTools {
 
+    AdminsTools[] implementations = { new Internal(), new SlashJs(), new Mindurka() };
+
     String disabled = bundle.format("admins.notenabled");
     String unavailable = bundle.format("admins.notavailable");
+    String restricted = bundle.format("admins.restricted");
+
+    default boolean isRestricted(int flag) {
+        if (DisabledTools.disabled(flag)) {
+            ui.showInfoFade(restricted);
+            return true;
+        }
+        return false;
+    }
+
+    String keyName();
 
     void manageRuleBool(boolean value, String name);
 

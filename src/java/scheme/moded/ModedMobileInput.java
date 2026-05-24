@@ -19,6 +19,7 @@ import mindustry.world.blocks.power.PowerNode;
 import mi2u.input.InputOverwrite;
 import scheme.ai.GammaAI;
 import scheme.tools.BuildingTools.Mode;
+import scheme.tools.DisabledTools;
 
 import static arc.Core.*;
 import static mindustry.Vars.*;
@@ -59,7 +60,7 @@ public class ModedMobileInput extends MobileInput implements ModedInputHandler, 
 
         var button = table.getChildren().get(table.getChildren().size - 1);
         button.clicked(() -> {
-            if (m_schematics.isCursed(selectPlans)) admins.flush(selectPlans);
+            if (m_schematics.isCursed(selectPlans) && !admins.isRestricted(DisabledTools.FLUSH)) admins.flush(selectPlans);
         });
 
         int size = button.getListeners().size;
@@ -184,7 +185,7 @@ public class ModedMobileInput extends MobileInput implements ModedInputHandler, 
                 build.plan.addAll(linePlans);
             });
 
-            if (build.mode == Mode.brush) admins.brush(cursorX, cursorY, build.size);
+            if (build.mode == Mode.brush && !admins.isRestricted(DisabledTools.BRUSH)) admins.brush(cursorX, cursorY, build.size);
 
             lastX = cursorX;
             lastY = cursorY;
@@ -197,7 +198,7 @@ public class ModedMobileInput extends MobileInput implements ModedInputHandler, 
                 if (build.mode == Mode.pick) tile.select(cursorX, cursorY);
                 if (build.mode == Mode.edit) {
                     NormalizeResult result = Placement.normalizeArea(buildX, buildY, cursorX, cursorY, 0, false, maxSchematicSize);
-                    admins.fill(result.x, result.y, result.x2, result.y2);
+                    if (!admins.isRestricted(DisabledTools.FILL)) admins.fill(result.x, result.y, result.x2, result.y2);
                 }
             }
         }

@@ -1,5 +1,6 @@
 package scheme.ui.dialogs;
 
+import mindustry.gen.Call;
 import mindustry.gen.Icon;
 
 import static arc.Core.*;
@@ -21,7 +22,7 @@ public class SettingsMenuDialog {
 //            table.checkPref("crashreports", true); in dev
             table.checkPref("hardscheme", false);
             table.checkPref("approachenabled", true);
-            table.checkPref("welcome", true);
+            table.checkPref("welcome", false); // no oce care
             table.checkPref("check4update", true);
 
             table.areaTextPref("subtitle", "I am using Scheme Size btw");
@@ -34,6 +35,8 @@ public class SettingsMenuDialog {
         // 6f and 1.5f are default values in Renderer
         renderer.maxZoom = settings.getInt("maxzoommul") / 4f * 6f;
         renderer.minZoom = 1f / (settings.getInt("minzoommul") / 4f) * 1.5f;
+
+        Call.serverPacketReliable("MySubtitle", settings.getString("subtitle"));
     }
 
     private String processor(int value) {

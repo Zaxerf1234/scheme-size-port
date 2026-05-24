@@ -26,6 +26,7 @@ import mindustry.net.Packets.AdminAction;
 import mindustry.ui.Styles;
 import mindustry.ui.dialogs.BaseDialog;
 import scheme.ServerIntegration;
+import scheme.tools.DisabledTools;
 
 import static arc.Core.*;
 import static mindustry.Vars.*;
@@ -48,6 +49,8 @@ public class PlayerListFragment extends mindustry.ui.fragments.PlayerListFragmen
         search = getSearch();
         Table pane = getPane(), menu = getMenu();
 
+
+        // FIXME: doesnt display
         pane.row();
         pane.check("@trace.type.show", value -> show = value).pad(10f).padBottom(0f).left().row();
         menu.getCells().get(1).padLeft(10f).padRight(10f); // looks better
@@ -126,7 +129,7 @@ public class PlayerListFragment extends mindustry.ui.fragments.PlayerListFragmen
                         app.setClipboardText(user.coloredName());
                         ui.showInfoFade("@copied");
                     });
-                    t.button(atlas.drawable("status-blasted"), ustyle, () -> admins.despawn(user));
+                    t.button(atlas.drawable("status-blasted"), ustyle, () -> { if (!admins.isRestricted(DisabledTools.DESPAWN)) admins.despawn(user); });
                 }).padRight(12f).size(105f, h);
             }
 

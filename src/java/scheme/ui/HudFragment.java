@@ -33,6 +33,7 @@ import scheme.ai.GammaAI;
 import scheme.ai.NetMinerAI;
 import scheme.ai.GammaAI.Updater;
 import scheme.tools.BuildingTools.Mode;
+import scheme.tools.DisabledTools;
 import scheme.ui.PlayerListFragment.TooltipLocker;
 
 import static arc.Core.*;
@@ -231,25 +232,25 @@ public class HudFragment {
                 partitionmb(pad, mode -> {
                     mode.add(mobiles);
                     if (mobile) setAction(mode, "disarmed", m_input::lockShooting);
-                    setAction(mode, "blasted", () -> admins.despawn());
-                    setAction(mode, "overdrive", () -> admins.teleport());
+                    setAction(mode, "blasted", () -> { if (!admins.isRestricted(DisabledTools.DESPAWN)) admins.despawn(); });
+                    setAction(mode, "overdrive", () -> { if (!admins.isRestricted(DisabledTools.TELEPORT)) admins.teleport(); });
                     setAction(mode, Icon.lock, () -> m_input.lockMovement());
-                    setAction(mode, Icon.fileText, () -> { if (!admins.unusable()) rulesetter.show(); });
+                    setAction(mode, Icon.fileText, () -> { if (!admins.isRestricted(DisabledTools.RULESETTER) && !admins.unusable()) rulesetter.show(); });
                 }).visible(() -> true).update(mode -> mode.setTranslation(0f, Scl.scl(mobiles.fliped ? 0f : -63.2f))).row();
 
                 partitionmb(pad, mode -> {
-                    setAction(mode, Icon.effect, () -> admins.placeCore());
-                    setAction(mode, "boss", () -> admins.manageTeam());
+                    setAction(mode, Icon.effect, () -> { if (!admins.isRestricted(DisabledTools.CORE)) admins.placeCore(); });
+                    setAction(mode, "boss", () -> { if (!admins.isRestricted(DisabledTools.TEAM)) admins.manageTeam(); });
                     setAction(mode, Icon.logic, () -> ai.select());
                     setAction(mode, Icon.admin, () -> adminscfg.show());
                     setAction(mode, Icon.image, () -> rendercfg.show());
                 }).row();
 
                 partitionmb(pad, mode -> {
-                    setAction(mode, Icon.units, () -> admins.manageUnit());
-                    setAction(mode, Icon.add, () -> admins.spawnUnits());
-                    setAction(mode, "corroded", () -> admins.manageEffect());
-                    setAction(mode, Icon.production, () -> admins.manageItem());
+                    setAction(mode, Icon.units, () -> { if (!admins.isRestricted(DisabledTools.SPAWN)) admins.manageUnit(); });
+                    setAction(mode, Icon.add, () -> { if (!admins.isRestricted(DisabledTools.SPAWN)) admins.spawnUnits(); });
+                    setAction(mode, "corroded", () -> { if (!admins.isRestricted(DisabledTools.EFFECT)) admins.manageEffect(); });
+                    setAction(mode, Icon.production, () -> { if (!admins.isRestricted(DisabledTools.ITEM)) admins.manageItem(); });
                 }).row();
             }).margin(0f).update(pad -> {
                 if (block[1] == null) return; // waves main are not null but block is

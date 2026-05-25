@@ -41,12 +41,15 @@ public class BuildingTools {
     public Block iterated;
     public int ibsize;
 
+    public boolean schemesAllowed;
+
     public BuildingTools() {
         this.input = m_input.asHandler();
         this.useful = Seq.with(Mode.drop, Mode.replace, Mode.remove, Mode.connect);
 
         Events.on(WorldLoadEvent.class, event -> {
-            if (settings.getBool("hardscheme")) state.rules.schematicsAllowed = true;
+            schemesAllowed =  state.rules.schematicsAllowed;
+            if (settings.getBool("hardscheme") && !net.client()) state.rules.schematicsAllowed = true;
         });
     }
 

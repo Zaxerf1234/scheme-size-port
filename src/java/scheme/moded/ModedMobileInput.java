@@ -114,6 +114,8 @@ public class ModedMobileInput extends MobileInput implements ModedInputHandler, 
             if (input.isTouched(0) && !scene.hasMouse()) observed = null;
         }
 
+        if (isTap() && !scene.hasMouse() && corefrag.choosesNode) corefrag.trySetNode(tileX(), tileY());
+
         buildInput();
         if (movementLocked) {
             if (player.unit() == null) return;

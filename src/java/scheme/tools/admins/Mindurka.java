@@ -76,7 +76,7 @@ public class Mindurka implements AdminsTools {
         if (unusable()) return;
         unit.select(true, false, true, (target, team, unit, amount) -> {
             if (amount == 0f) {
-                send("despawn");
+                send("despawn", unit.id);
                 return;
             }
 

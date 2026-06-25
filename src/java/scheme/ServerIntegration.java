@@ -3,6 +3,7 @@ package scheme;
 import arc.Core;
 import arc.Events;
 import arc.struct.IntMap;
+import arc.util.Log;
 import arc.util.Strings;
 import arc.util.Time;
 import mindustry.game.EventType.*;
@@ -47,18 +48,28 @@ public class ServerIntegration {
         });
 
         netServer.addPacketHandler("MySubtitle", (target, args) -> {
-            SSUsers.put(target.id, args);
-            IntMap<String> single = new IntMap<>(1);
-            single.put(target.id, args);
-            Call.clientPacketReliable("Subtitles", JsonIO.write(single));
+            try {
+                if (args != null && args.length() > 256) return;
+                SSUsers.put(target.id, args);
+                IntMap<String> single = new IntMap<>(1);
+                single.put(target.id, args);
+                Call.clientPacketReliable("Subtitles", JsonIO.write(single));
 
-            if (SSUsers.size > 1) {
-                Call.clientPacketReliable(target.con, "Subtitles", JsonIO.write(SSUsers));
+                if (SSUsers.size > 1) {
+                    Call.clientPacketReliable(target.con, "Subtitles", JsonIO.write(SSUsers));
+                }
+            } catch (Exception e) {
+                Log.warn("Invalid MySubtitle packet from @", target.name, e);
             }
         });
 
         netServer.addBinaryPacketHandler("schemesize.available", (player, data) -> {
-            Call.clientBinaryPacketReliable(player.con, "schemesize.available", data);
+            try {
+                if (data == null || data.length > 64) return;
+                Call.clientBinaryPacketReliable(player.con, "schemesize.available", data);
+            } catch (Exception e) {
+                Log.warn("Invalid schemesize.available packet from @", player.name, e);
+            }
         });
 
         // endregion
@@ -68,23 +79,38 @@ public class ServerIntegration {
         Events.run(ClientPreConnectEvent.class, ServerIntegration::clear);
 
         netClient.addPacketHandler("SendMeSubtitle", args -> {
-            Call.serverPacketReliable("MySubtitle", settings.getString("subtitle"));
-            if (args != null) hostID = Strings.parseInt(args, -1);
+            try {
+                Call.serverPacketReliable("MySubtitle", settings.getString("subtitle"));
+                if (args != null) hostID = Strings.parseInt(args, -1);
+            } catch (Exception e) {
+                Log.warn("Invalid SendMeSubtitle packet", e);
+            }
         });
 
         netClient.addPacketHandler("Subtitles", args -> {
-            IntMap<String> received = JsonIO.read(IntMap.class, args);
-            for (var entry : received) {
-                if (entry.value == null || entry.value.isEmpty()) SSUsers.remove(entry.key);
-                else SSUsers.put(entry.key, entry.value);
+            try {
+                if (args == null || args.isEmpty()) return;
+                IntMap<String> received = JsonIO.read(IntMap.class, args);
+                if (received == null) return;
+                for (var entry : received) {
+                    if (entry.value == null || entry.value.isEmpty()) SSUsers.remove(entry.key);
+                    else SSUsers.put(entry.key, entry.value);
+                }
+                hasData = true;
+            } catch (Exception e) {
+                Log.warn("Invalid Subtitles packet", e);
             }
-            hasData = true;
         });
 
         netClient.addBinaryPacketHandler("schemesize.available", (data) -> {
-            schemeAvailable = true;
-            DisabledTools.clear();
-            DisabledTools.set(data);
+            try {
+                if (data == null || data.length == 0) return;
+                schemeAvailable = true;
+                DisabledTools.clear();
+                DisabledTools.set(data);
+            } catch (Exception e) {
+                Log.warn("Invalid schemesize.available packet", e);
+            }
         });
 
         Events.on(WorldLoadEndEvent.class, e -> {

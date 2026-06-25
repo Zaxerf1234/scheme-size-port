@@ -19,6 +19,8 @@ import mindustry.input.Placement.NormalizeResult;
 import mindustry.type.Item;
 import mindustry.world.Block;
 import mindustry.world.Tile;
+import mindustry.world.blocks.environment.Prop;
+import mindustry.world.blocks.environment.StaticWall;
 import mindustry.world.modules.ItemModule;
 import scheme.Main;
 
@@ -40,6 +42,7 @@ public class BuildingTools {
     public Cons<Building> iterator;
     public Block iterated;
     public int ibsize;
+    public TileLayer tileLayer;
 
     public boolean schemesAllowed;
 
@@ -75,13 +78,39 @@ public class BuildingTools {
         if (block() == null) return;
 
         Tile tile = world.tile(x, y);
-        if (tile == null || tile.build == null) return;
+        if (tile == null) return;
 
+        if (block().isFloor() && !block().isOverlay()) {
+            iterated = tile.floor();
+            if (iterated == null || block() == iterated) return;
+            tileLayer = TileLayer.floor;
+            try { iterateTile(tile); } catch (Throwable e) { Main.error(e); }
+            return;
+        }
+
+        if (block().isOverlay()) {
+            iterated = tile.overlay();
+            if (iterated == null || block() == iterated) return;
+            tileLayer = TileLayer.overlay;
+            try { iterateTile(tile); } catch (Throwable e) { Main.error(e); }
+            return;
+        }
+
+        if (block() instanceof Prop || block() instanceof StaticWall || block() == mindustry.content.Blocks.removeWall) {
+            iterated = tile.block();
+            if (!(iterated instanceof Prop) && !(iterated instanceof StaticWall)) return;
+            if (block() == iterated) return;
+            tileLayer = TileLayer.block;
+            try { iterateTile(tile); } catch (Throwable e) { Main.error(e); }
+            return;
+        }
+
+        if (tile.build == null) return;
         iterator = build -> plan(build.tileX(), build.tileY(), build.rotation);
         iterated = tile.block();
         ibsize = iterated.size;
 
-        try { // StackOverflowException was here
+        try {
             if (block().size == iterated.size && block() != iterated) iterate(tile);
         } catch (Throwable e) { Main.error(e); }
     }
@@ -99,7 +128,7 @@ public class BuildingTools {
 
     private void iterate(Tile tile){
         if (tile.block() != iterated) return;
-        
+
         int bx = tile.build.tileX(), by = tile.build.tileY();
         if (plan.contains(plan -> plan.x == bx && plan.y == by)) return;
         iterator.get(tile.build);
@@ -109,6 +138,25 @@ public class BuildingTools {
         for (int x = bx + ibsize - 1; x >= bx - ibsize + 1; x -= ibsize) iterate(world.tile(x, by - ibsize));
         for (int y = by - ibsize + 1; y <= by + ibsize - 1; y += ibsize) iterate(world.tile(bx - ibsize, y));
     } // bruhness is everywhere bruhness is everywhere bruhness is everywhere bruhness is everywhere bruhness
+
+    private Block tileBlockAt(Tile tile) {
+        if (tileLayer == TileLayer.floor) return tile.floor();
+        if (tileLayer == TileLayer.overlay) return tile.overlay();
+        return tile.block();
+    }
+
+    private void iterateTile(Tile tile) {
+        if (tile == null) return;
+        if (tileBlockAt(tile) != iterated) return;
+        if (plan.contains(p -> p.x == tile.x && p.y == tile.y)) return;
+
+        plan(tile.x, tile.y, 0);
+
+        iterateTile(world.tile(tile.x + 1, tile.y));
+        iterateTile(world.tile(tile.x - 1, tile.y));
+        iterateTile(world.tile(tile.x, tile.y + 1));
+        iterateTile(world.tile(tile.x, tile.y - 1));
+    }
 
     public void connect(int x, int y, Cons2<Integer, Integer> callback) {
         if (block() == null) return;
@@ -208,5 +256,9 @@ public class BuildingTools {
 
     public enum Mode {
         none, drop, replace, remove, connect, fill, square, circle, pick, edit, brush;
+    }
+
+    public enum TileLayer {
+        floor, overlay, block;
     }
 }

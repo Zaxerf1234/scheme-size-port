@@ -67,7 +67,7 @@ public class Mindurka implements AdminsTools {
     public void manageUnit() {
         if (unusable()) return;
         unit.select(false, true, false, (target, team, unit, amount) -> {
-            send("unit", unit.id, "#" + target.id);
+            send("unit", unit.name, "#" + target.id);
             units.refresh();
         });
     }
@@ -76,23 +76,27 @@ public class Mindurka implements AdminsTools {
         if (unusable()) return;
         unit.select(true, false, true, (target, team, unit, amount) -> {
             if (amount == 0f) {
-                send("despawn", unit.id);
+                if(unit!=null) send("despawntype",unit.name);
+                else send("depsawn");
                 return;
             }
 
-            send("spawn", unit.id, amount.intValue(), team.id);
+            send("spawn", unit.name, amount.intValue(), team.id);
             units.refresh();
         });
     }
 
     public void manageEffect() {
         if (unusable()) return;
-        effect.select(true, true, false, (target, team, effect, amount) -> send("effect", effect.id, amount.intValue() / 60, "#" + target.id));
+        effect.select(true, true, false, (target, team, effect, amount) -> {
+            if (target.unit() != null) send("effect", effect.name, amount.intValue() / 60, target.unit().id);
+            else send("effect", effect.name, amount.intValue() / 60);
+        });
     }
 
     public void manageItem() {
         if (unusable()) return;
-        item.select(true, false, true, (target, team, item, amount) -> send("give", item.id, amount.intValue(), team.id));
+        item.select(true, false, true, (target, team, item, amount) -> send("give", item.name, amount.intValue(), team.id));
     }
 
     public void manageTeam() {
@@ -123,7 +127,8 @@ public class Mindurka implements AdminsTools {
 
     public void despawn(Player target) {
         if (unusable()) return;
-        send("despawn", "#" + target.id);
+        if (target.unit() != null) send("despawn",target.team().id, "#" + target.unit().id);
+        else if(target==null) send("despawn");
     }
 
     public void teleport(Position pos) {

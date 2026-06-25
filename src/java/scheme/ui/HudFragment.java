@@ -17,10 +17,12 @@ import arc.scene.ui.TextField.TextFieldStyle;
 import arc.scene.ui.layout.*;
 import arc.struct.Seq;
 import arc.util.Align;
+import arc.util.Log;
 import arc.util.Scaling;
 import arc.util.Time;
 import mindustry.Vars;
 import mindustry.game.EventType.*;
+import mindustry.game.Rules;
 import mindustry.gen.Icon;
 import mindustry.gen.Tex;
 import mindustry.gen.Unit;
@@ -40,6 +42,7 @@ import static arc.Core.*;
 import static mindustry.Vars.*;
 import static scheme.SchemeVars.*;
 import static scheme.ai.GammaAI.Updater.*;
+import static scheme.tools.admins.AdminsTools.restricted;
 
 public class HudFragment {
 
@@ -209,6 +212,7 @@ public class HudFragment {
             if (mobile) return;
             else {
                 cont.button("@schematics", Icon.paste, Styles.squareTogglet, () -> {
+                            if(net.client() && !build.schemesAllowed) {ui.showInfoFade(restricted); return;} // not on servers
                             if (shortfrag.visible) shortfrag.hide();
                             else shortfrag.show(graphics.getWidth() - (int) Scl.scl(15f), graphics.getHeight() / 2);
                         }).size(155f, 50f).margin(8f).checked(t -> shortfrag.visible)

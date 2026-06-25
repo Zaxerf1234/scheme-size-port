@@ -207,6 +207,7 @@ public class RuleSetterDialog extends BaseDialog {
         String label = bundle.has(key) ? bundle.get(key) : key;
         Cell<CheckBox> cell = t.check(label, value, val -> {
             onChange.get(val);
+            rebuild();
         }).pad(6).left();
         t.row();
         return new FieldCell(cell);
@@ -226,6 +227,7 @@ public class RuleSetterDialog extends BaseDialog {
                     if (!focused && field.isValid()) {
                         float f = Strings.parseFloat(field.getText(), value);
                         onChange.get(f);
+                        rebuild();
                     }
                 }
             });
@@ -248,6 +250,7 @@ public class RuleSetterDialog extends BaseDialog {
                     if (!focused && field.isValid()) {
                         int i = Strings.parseInt(field.getText(), value);
                         onChange.get(i);
+                        rebuild();
                     }
                 }
             });

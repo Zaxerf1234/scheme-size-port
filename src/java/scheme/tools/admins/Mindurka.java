@@ -67,7 +67,7 @@ public class Mindurka implements AdminsTools {
     public void manageUnit() {
         if (unusable()) return;
         unit.select(false, true, false, (target, team, unit, amount) -> {
-            send("unit", unit.id, "#" + target.id);
+            send("unit", unit.name, "#" + target.id);
             units.refresh();
         });
     }
@@ -76,23 +76,27 @@ public class Mindurka implements AdminsTools {
         if (unusable()) return;
         unit.select(true, false, true, (target, team, unit, amount) -> {
             if (amount == 0f) {
-                send("despawn");
+                if(unit!=null) send("despawntype",unit.name);
+                else send("depsawn");
                 return;
             }
 
-            send("spawn", unit.id, amount.intValue(), team.id);
+            send("spawn", unit.name, amount.intValue(), team.id);
             units.refresh();
         });
     }
 
     public void manageEffect() {
         if (unusable()) return;
-        effect.select(true, true, false, (target, team, effect, amount) -> send("effect", effect.id, amount.intValue() / 60, "#" + target.id));
+        effect.select(true, true, false, (target, team, effect, amount) -> {
+            if (target.unit() != null) send("effect", effect.name, amount.intValue() / 60, target.unit().id);
+            else send("effect", effect.name, amount.intValue() / 60);
+        });
     }
 
     public void manageItem() {
         if (unusable()) return;
-        item.select(true, false, true, (target, team, item, amount) -> send("give", item.id, amount.intValue(), team.id));
+        item.select(true, false, true, (target, team, item, amount) -> send("give", item.name, amount.intValue(), team.id));
     }
 
     public void manageTeam() {
@@ -123,7 +127,8 @@ public class Mindurka implements AdminsTools {
 
     public void despawn(Player target) {
         if (unusable()) return;
-        send("despawn", "#" + target.id);
+        if (target.unit() != null) send("despawn",target.team().id, "#" + target.unit().id);
+        else if(target==null) send("despawn");
     }
 
     public void teleport(Position pos) {
@@ -176,16 +181,57 @@ public class Mindurka implements AdminsTools {
 
     public void flush(Seq<BuildPlan> plans) {
         if (unusable()) return;
-        plans.each(plan -> {
-            if (plan.block.isFloor() && !plan.block.isOverlay())
-                edit(plan.block.asFloor(), null, null, null, plan.x, plan.y);
-            else if (plan.block instanceof Prop || plan.block instanceof StaticWall)
-                edit(null, plan.block, null, null, plan.x, plan.y);
-            else if (plan.block.isOverlay())
-                edit(null, null, plan.block.asFloor(), null, plan.x, plan.y);
-            else if (plan.block instanceof Block)
-                edit(null, null, null, plan.block, plan.x, plan.y);
-        });
+
+        var groups = new java.util.LinkedHashMap<String, Seq<int[]>>();
+        for (int i = 0; i < plans.size; i++) {
+            BuildPlan plan = plans.get(i);
+            String blockId, floorId, overlayId;
+            if (plan.block.isFloor() && !plan.block.isOverlay()) {
+                blockId = "null"; floorId = id(plan.block); overlayId = "null";
+            } else if (plan.block instanceof Prop || plan.block instanceof StaticWall) {
+                blockId = id(plan.block); floorId = "null"; overlayId = "null";
+            } else if (plan.block.isOverlay()) {
+                blockId = "null"; floorId = "null"; overlayId = id(plan.block);
+            } else {
+                blockId = id(plan.block); floorId = "null"; overlayId = "null";
+            }
+            String key = blockId + " " + floorId + " " + overlayId;
+            groups.computeIfAbsent(key, k -> new Seq<>()).add(new int[]{plan.x, plan.y});
+        }
+
+        for (var entry : groups.entrySet()) {
+            String[] params = entry.getKey().split(" ");
+            Seq<int[]> points = entry.getValue();
+
+            points.sort((a, b) -> a[1] != b[1] ? a[1] - b[1] : a[0] - b[0]);
+
+            Seq<int[]> segs = new Seq<>();
+            int i = 0;
+            while (i < points.size) {
+                int sx = points.get(i)[0], sy = points.get(i)[1], ex = sx;
+                while (i + 1 < points.size && points.get(i + 1)[1] == sy && points.get(i + 1)[0] == ex + 1) {
+                    ex = points.get(++i)[0];
+                }
+                segs.add(new int[]{sx, sy, ex - sx, 0});
+                i++;
+            }
+
+            for (int j = 0; j < segs.size; j++) {
+                int[] s = segs.get(j);
+                for (int k = j + 1; k < segs.size; ) {
+                    int[] n = segs.get(k);
+                    if (n[0] == s[0] && n[2] == s[2] && n[1] == s[1] + s[3] + 1) {
+                        s[3] = n[1] - s[1];
+                        segs.remove(k);
+                    } else k++;
+                }
+            }
+
+            for (int j = 0; j < segs.size; j++) {
+                int[] s = segs.get(j);
+                sendPacket("schemesize.fill", params[0], 0, params[1], params[2], s[0], s[1], s[2], s[3]);
+            }
+        }
     }
 
     public boolean unusable() {

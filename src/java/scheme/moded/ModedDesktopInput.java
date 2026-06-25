@@ -19,6 +19,7 @@ import mindustry.graphics.Pal;
 import mindustry.input.*;
 import mindustry.input.Placement.NormalizeDrawResult;
 import mindustry.input.Placement.NormalizeResult;
+import mindustry.gen.Building;
 import mindustry.gen.Mechc;
 import scheme.tools.DisabledTools;
 import mindustry.world.Block;
@@ -47,6 +48,7 @@ public class ModedDesktopInput extends DesktopInput implements ModedInputHandler
     public Vec2 shootXY = new Vec2();
     public boolean ctrlMove;
     public Vec2 mi2uMove = new Vec2();
+    public Building forceTapped = null;
 
     @Override
     protected void removeSelection(int x1, int y1, int x2, int y2, int maxLength) {
@@ -97,6 +99,15 @@ public class ModedDesktopInput extends DesktopInput implements ModedInputHandler
             drawEditSelection(cursorX, cursorY, build.size);
 
         drawCommanded();
+
+        if (settings.getBool("forceTapTile") && block == null && !scene.hasMouse()) {
+            Vec2 vec = input.mouseWorld(getMouseX(), getMouseY());
+            Building build = world.buildWorld(vec.x, vec.y);
+            if (build != null && build.team != player.team()) {
+                build.drawSelect();
+                if (!build.enabled && build.block.drawDisabled) build.drawDisabled();
+            }
+        }
 
         Draw.reset();
     }
@@ -150,6 +161,17 @@ public class ModedDesktopInput extends DesktopInput implements ModedInputHandler
         }
 
         if (scene.hasKeyboard()) return;
+
+        if (input.keyTap(Binding.select) && !scene.hasMouse() && corefrag.choosesNode) corefrag.trySetNode(tileX(getMouseX()), tileY(getMouseY()));
+
+        if (settings.getBool("forceTapTile") && input.keyTap(Binding.select) && !scene.hasMouse()) {
+            if (player.dead()) {
+                var build = world.buildWorld(input.mouseWorldX(), input.mouseWorldY());
+                forceTap(build, true);
+            } else {
+                forceTap(prevSelected == null ? null : prevSelected.build, false);
+            }
+        }
 
         modedInput();
         buildInput();
@@ -332,6 +354,41 @@ public class ModedDesktopInput extends DesktopInput implements ModedInputHandler
     public void move(Vec2 movement) {
         ctrlMove = true;
         mi2uMove.set(movement);
+    }
+
+    private void forceTap(Building build, boolean includeSelfTeam) {
+        if (build == null) return;
+        if (!includeSelfTeam && build.interactable(player.team())) return;
+
+        if (build == forceTapped) {
+            inv.hide();
+            config.hideConfig();
+            forceTapped = null;
+            return;
+        }
+
+        var ptm = state.playtestingMap;
+        state.playtestingMap = state.map;
+
+        if (build.block.configurable) {
+            if ((!config.isShown() && build.shouldShowConfigure(player))
+                    || (config.isShown() && config.getSelected().onConfigureBuildTapped(build))) {
+                config.showConfig(build);
+            }
+        } else if (!config.hasConfigMouse()) {
+            if (config.isShown() && config.getSelected().onConfigureBuildTapped(build)) {
+                config.hideConfig();
+            }
+        }
+
+        if (build.block.synthetic() && build.block.allowConfigInventory) {
+            if (build.block.hasItems && build.items.total() > 0) {
+                inv.showFor(build);
+            }
+        }
+
+        forceTapped = build;
+        state.playtestingMap = ptm;
     }
 
     @Override

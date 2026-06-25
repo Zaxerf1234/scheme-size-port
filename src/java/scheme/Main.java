@@ -43,7 +43,7 @@ public class Main extends Mod {
         MessageQueue.load();
         RainbowTeam.load();
         SBinding.load();
-        new com.xpdustry.claj.client.Main().init();
+        if(mods.getMod("claj") == null || !mods.getMod("claj").enabled())new com.xpdustry.claj.client.Main().init();
 
         ui.schematics = schemas;
         ui.listfrag = listfrag;

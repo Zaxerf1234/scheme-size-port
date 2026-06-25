@@ -184,14 +184,21 @@ public class Internal implements AdminsTools {
 
     public void flush(Seq<BuildPlan> plans) {
         plans.each(plan -> {
-            if (plan.block.isFloor() && !plan.block.isOverlay())
-                edit(plan.block, null, null, null, plan.x, plan.y);
-            else if (plan.block instanceof Prop || plan.block instanceof StaticWall)
-                edit(null, plan.block, null, null, plan.x, plan.y);
-            else if (plan.block.isOverlay())
-                edit(null, null, plan.block, null, plan.x, plan.y);
-            else if (plan.block instanceof Block)
-                edit(null, null, null, plan.block, plan.x, plan.y);
+            Tile t = world.tile(plan.x, plan.y);
+            if (t == null) return;
+            if (plan.block.isFloor() && !plan.block.isOverlay()) {
+                if (t.floor() != plan.block) t.setFloorNet(plan.block, t.overlay());
+            } else if (plan.block instanceof Prop || plan.block instanceof StaticWall) {
+                if (t.block() != plan.block) t.setNet(plan.block);
+            } else if (plan.block.isOverlay()) {
+                if (t.overlay() != plan.block) t.setFloorNet(t.floor(), plan.block);
+            } else if (plan.block == Blocks.removeWall) {
+                if (!t.block().hasBuilding()) t.setNet(Blocks.air, player.team(), 0);
+            } else if (plan.block == Blocks.removeOre) {
+                t.setFloorNet(t.floor(), null);
+            } else if (t.block() != plan.block) {
+                t.setNet(plan.block, player.team(), 0);
+            }
         });
     }
 

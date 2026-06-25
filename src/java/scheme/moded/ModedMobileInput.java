@@ -13,6 +13,7 @@ import mindustry.game.Schematic;
 import mindustry.gen.Mechc;
 import mindustry.gen.Player;
 import mindustry.gen.Unit;
+import mindustry.gen.Building;
 import mindustry.input.*;
 import mindustry.input.Placement.NormalizeResult;
 import mindustry.world.blocks.power.PowerNode;
@@ -39,6 +40,7 @@ public class ModedMobileInput extends MobileInput implements ModedInputHandler, 
     public Vec2 shootXY = new Vec2();
     public boolean ctrlMove;
     public Vec2 mi2uMove = new Vec2();
+    public Building forceTapped = null;
 
     private boolean isRelease() {
         return lastTouched && !input.isTouched(0);
@@ -89,6 +91,14 @@ public class ModedMobileInput extends MobileInput implements ModedInputHandler, 
             drawEditSelection(lastX, lastY, build.size);
 
         drawCommanded();
+
+        if (settings.getBool("forceTapTile") && !scene.hasMouse()) {
+            var build = world.buildWorld(input.mouseWorldX(), input.mouseWorldY());
+            if (build != null && build.team != player.team()) {
+                build.drawSelect();
+                if (!build.enabled && build.block.drawDisabled) build.drawDisabled();
+            }
+        }
     }
 
     @Override
@@ -112,6 +122,13 @@ public class ModedMobileInput extends MobileInput implements ModedInputHandler, 
             if (observed.unit() == null) return;
             camera.position.set(observed.unit()); // idk why, but unit moves smoother
             if (input.isTouched(0) && !scene.hasMouse()) observed = null;
+        }
+
+        if (isTap() && !scene.hasMouse() && corefrag.choosesNode) corefrag.trySetNode(tileX(), tileY());
+
+        if (settings.getBool("forceTapTile") && isTap() && !scene.hasMouse()) {
+            var build = world.buildWorld(input.mouseWorldX(), input.mouseWorldY());
+            forceTap(build, player.dead());
         }
 
         buildInput();
@@ -263,6 +280,41 @@ public class ModedMobileInput extends MobileInput implements ModedInputHandler, 
     public void move(Vec2 movement) {
         ctrlMove = true;
         mi2uMove.set(movement);
+    }
+
+    private void forceTap(Building build, boolean includeSelfTeam) {
+        if (build == null) return;
+        if (!includeSelfTeam && build.interactable(player.team())) return;
+
+        if (build == forceTapped) {
+            inv.hide();
+            config.hideConfig();
+            forceTapped = null;
+            return;
+        }
+
+        var ptm = state.playtestingMap;
+        state.playtestingMap = state.map;
+
+        if (build.block.configurable) {
+            if ((!config.isShown() && build.shouldShowConfigure(player))
+                    || (config.isShown() && config.getSelected().onConfigureBuildTapped(build))) {
+                config.showConfig(build);
+            }
+        } else if (!config.hasConfigMouse()) {
+            if (config.isShown() && config.getSelected().onConfigureBuildTapped(build)) {
+                config.hideConfig();
+            }
+        }
+
+        if (build.block.synthetic() && build.block.allowConfigInventory) {
+            if (build.block.hasItems && build.items.total() > 0) {
+                inv.showFor(build);
+            }
+        }
+
+        forceTapped = build;
+        state.playtestingMap = ptm;
     }
 
     @Override

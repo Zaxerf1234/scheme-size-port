@@ -124,8 +124,13 @@ public class CoreInfoFragment {
         }, true, () -> !timer.check(0, 240f));
     }
 
-    public void trySetNode(int x, int y) {
-        if (choosesNode && power.setNode(world.build(x, y))) choosesNode = false;
+    public boolean trySetNode(int x, int y) {
+        if (!choosesNode) return false;
+        if (power.setNode(world.build(x, y))) {
+            choosesNode = false;
+            return true;
+        }
+        return false;
     }
 
     public void nextLayer() {

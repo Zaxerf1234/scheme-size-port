@@ -23,6 +23,7 @@ public class SettingsMenuDialog {
             table.checkPref("hardscheme", false);
             table.checkPref("approachenabled", true);
             table.checkPref("welcome", false); // no oce care
+            table.checkPref("forceTapTile", false);
             table.checkPref("check4update", true);
 
             table.areaTextPref("subtitle", "I am using Scheme Size btw");

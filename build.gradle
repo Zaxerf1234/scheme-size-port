@@ -9,6 +9,12 @@ java {
     targetCompatibility = JavaVersion.VERSION_1_8
 }
 
+configurations.matching { it.canBeResolved }.configureEach {
+    attributes {
+        attribute(TargetJvmVersion.TARGET_JVM_VERSION_ATTRIBUTE, 17)
+    }
+}
+
 base {
     archivesName = project.name
 }
@@ -27,7 +33,7 @@ repositories {
 }
 
 ext {
-    mindustryVersion = 'v157.4'
+    mindustryVersion = 'v159'
     jabelVersion = '1.1.0'
     isWindows = System.getProperty("os.name").toLowerCase().contains("windows")
     sdkRoot = System.getenv("ANDROID_HOME") ?: System.getenv("ANDROID_SDK_ROOT")

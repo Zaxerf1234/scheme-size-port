@@ -237,7 +237,7 @@ public class HudFragment {
                     mode.add(mobiles);
                     if (mobile) setAction(mode, "disarmed", m_input::lockShooting);
                     setAction(mode, "blasted", () -> { if (!admins.isRestricted(DisabledTools.DESPAWN)) admins.despawn(); });
-                    setAction(mode, "overdrive", () -> { if (!admins.isRestricted(DisabledTools.TELEPORT)) admins.teleport(); });
+                    setAction(mode, "overdrive", () -> { if (!admins.isRestricted(DisabledTools.TELEPORT)) admins.teleport(true); });
                     setAction(mode, Icon.lock, () -> m_input.lockMovement());
                     setAction(mode, Icon.fileText, () -> { if (!admins.isRestricted(DisabledTools.RULESETTER) && !admins.unusable()) rulesetter.show(); });
                 }).visible(() -> true).update(mode -> mode.setTranslation(0f, Scl.scl(mobiles.fliped ? 0f : -63.2f))).row();

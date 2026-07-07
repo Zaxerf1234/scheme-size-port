@@ -68,13 +68,15 @@ public interface AdminsTools {
 
     void teleport(Position pos);
 
-    default Position getTeleportPosition() {
-        if (mobile) return PositionBuild.GetPosition(camera.position.x,camera.position.y);
+    default void teleport(Boolean isButton){teleport(getTeleportPosition(isButton));}
+
+    default Position getTeleportPosition(boolean isButton) {
+        if (mobile || isButton) return PositionBuild.GetPosition(camera.position.x,camera.position.y);
         else return PositionBuild.GetPosition( player.mouseX, player.mouseY);
     }
 
     default void teleport() {
-        teleport(getTeleportPosition());
+        teleport(getTeleportPosition(false));
     }
 
     default void deletePlyaer(){

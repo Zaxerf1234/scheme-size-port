@@ -7,6 +7,7 @@ import scheme.Main;
 
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.InetAddress;
 import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -39,8 +40,13 @@ public class Charo extends SlashJs {
             return;
         }
 
-        String url = "https://console." + host + "/api/console/run";
-        new Thread(() -> postConsole(url, js), "scheme-charo-console").start();
+        // raw serverHost may include port (ip:port). extract ip part for fallback use
+        String raw = serverHost == null ? host : serverHost;
+        int idx = raw == null ? -1 : raw.lastIndexOf(':');
+        String ipOnly = (idx > (raw == null ? -1 : raw.lastIndexOf(']'))) ? raw.substring(0, idx) : raw;
+
+        String domainCandidate = host;
+        new Thread(() -> postConsoleWithFallback(domainCandidate, ipOnly, js), "scheme-charo-console").start();
     }
 
     private String resolveHost() {
@@ -52,7 +58,7 @@ public class Charo extends SlashJs {
             String resolved = uri.getHost();
             if (resolved != null && !resolved.isBlank()) return resolved;
         } catch (Throwable ignored) {
-            // fall back to the raw value below
+
         }
 
         int portIndex = host.lastIndexOf(':');
@@ -60,7 +66,7 @@ public class Charo extends SlashJs {
         return host;
     }
 
-    private void postConsole(String url, String command) {
+    private boolean postConsoleToUrl(String url, String command) {
         try {
             HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
             connection.setRequestMethod("POST");
@@ -82,14 +88,40 @@ public class Charo extends SlashJs {
             }
 
             int status = connection.getResponseCode();
-            if (status < 200 || status >= 300) {
-                MessageQueue.send("[Charo] Console POST failed with status " + status);
-                Main.error(new RuntimeException("Console POST failed with status " + status));
-            }
+            if (status >= 200 && status < 300) return true;
+
+            Main.error(new RuntimeException("Console POST failed with status " + status + " for " + url));
+            return false;
         } catch (Throwable e) {
             String msg = e == null || e.getMessage() == null ? "unknown" : e.getMessage();
-            MessageQueue.send("[Charo] Console POST error: " + msg);
             Main.error(e);
+            return false;
+        }
+    }
+
+    private void postConsoleWithFallback(String domainCandidate, String ipOnly, String command) {
+        if (domainCandidate != null && !domainCandidate.isBlank()) {
+            String domainUrl = "https://console." + domainCandidate + "/api/console/run";
+            if (postConsoleToUrl(domainUrl, command)) return;
+        }
+
+        if (ipOnly != null && !ipOnly.isBlank()) {
+            try {
+                InetAddress addr = InetAddress.getByName(ipOnly);
+                String canon = addr.getCanonicalHostName();
+                if (canon != null && !canon.isBlank() && !canon.equals(ipOnly)) {
+                    String altUrl = "https://console." + canon + "/api/console/run";
+                    if (postConsoleToUrl(altUrl, command)) return;
+                }
+            } catch (Throwable ignored) {
+
+            }
+
+            String fallbackHttp = "http://" + ipOnly + ":6569/api/console/run";
+            if (postConsoleToUrl(fallbackHttp, command)) return;
+
+            String fallbackHttps = "https://" + ipOnly + ":6569/api/console/run";
+            postConsoleToUrl(fallbackHttps, command);
         }
     }
 

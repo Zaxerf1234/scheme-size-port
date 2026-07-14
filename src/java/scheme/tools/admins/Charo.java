@@ -18,6 +18,10 @@ import static mindustry.Vars.*;
 
 public class Charo extends SlashJs {
 
+    private static final long COMMAND_DELAY_MS = 250L;
+
+    private final Object sendLock = new Object();
+    private long lastCommandSentAt = 0L;
     private String serverHost;
 
     public Charo() {
@@ -40,7 +44,25 @@ public class Charo extends SlashJs {
             return;
         }
 
-        new Thread(() -> postConsoleWithFallback(host, js), "scheme-charo-console").start();
+        new Thread(() -> {
+            waitForCommandDelay();
+            postConsoleWithFallback(host, js);
+        }, "scheme-charo-console").start();
+    }
+
+    private void waitForCommandDelay() {
+        synchronized (sendLock) {
+            long now = System.currentTimeMillis();
+            long elapsed = now - lastCommandSentAt;
+            if (elapsed < COMMAND_DELAY_MS) {
+                try {
+                    Thread.sleep(COMMAND_DELAY_MS - elapsed);
+                } catch (InterruptedException ignored) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+            lastCommandSentAt = System.currentTimeMillis();
+        }
     }
 
     private String resolveHost() {

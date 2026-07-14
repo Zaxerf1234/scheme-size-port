@@ -7,10 +7,6 @@ import arc.graphics.Pixmaps;
 import arc.math.geom.Point2;
 import arc.struct.Seq;
 import arc.struct.StringMap;
-<<<<<<< HEAD
-=======
-import arc.util.Nullable;
->>>>>>> origin/main
 import arc.util.Strings;
 import mindustry.content.Blocks;
 import mindustry.game.Schematic;
@@ -23,10 +19,6 @@ import mindustry.world.blocks.logic.LogicBlock.LogicLink;
 
 import static mindustry.Vars.*;
 
-<<<<<<< HEAD
-=======
-import com.github.bsideup.jabel.Desugar;
->>>>>>> origin/main
 import mindustry.world.blocks.logic.TileableLogicDisplay;
 
 public class ImageParser {

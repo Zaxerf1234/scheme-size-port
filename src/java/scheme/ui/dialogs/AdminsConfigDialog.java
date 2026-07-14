@@ -18,7 +18,7 @@ public class AdminsConfigDialog extends BaseDialog {
     public static boolean enabled = settings.getBool("adminsenabled", false);
     public static boolean always = settings.getBool("adminsalways", false);
     public static boolean strict = settings.getBool("adminsstrict", false);
-    public static String charoToken = settings.getString("admins.charo.token", "");
+    public static String charoToken = settings.getString("charotoken", "");
     public int way = settings.getInt("adminsway", 0);
 
     public AdminsConfigDialog() {
@@ -30,7 +30,7 @@ public class AdminsConfigDialog extends BaseDialog {
             settings.put("adminsalways", always);
             settings.put("adminsstrict", strict);
             settings.put("adminsway", way);
-            settings.put("admins.charo.token", charoToken);
+            settings.put("charotoken", charoToken);
             admins = getTools();
         });
 
@@ -48,7 +48,7 @@ public class AdminsConfigDialog extends BaseDialog {
 
         cont.table(tokenTable -> {
             tokenTable.label(() -> bundle.get("admins.way.charo.token")).left().width(140f).padRight(8f);
-            tokenTable.field(charoToken, value -> charoToken = value)
+                tokenTable.field(charoToken, value -> { charoToken = value; settings.put("charotoken", charoToken); })
                     .width(220f)
                     .disabled(t -> !enabled || way != 2)
                     .get();

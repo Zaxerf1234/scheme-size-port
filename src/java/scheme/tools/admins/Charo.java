@@ -100,7 +100,7 @@ public class Charo extends SlashJs {
     }
 
     private void postConsoleWithFallback(String domainCandidate, String ipOnly, String command) {
-        if (domainCandidate != null && !domainCandidate.isBlank()) {
+        if (domainCandidate != null && !domainCandidate.isBlank() && !isIpAddress(domainCandidate)) {
             String domainUrl = "https://console." + domainCandidate + "/api/console/run";
             if (postConsoleToUrl(domainUrl, command)) return;
         }
@@ -109,7 +109,7 @@ public class Charo extends SlashJs {
             try {
                 InetAddress addr = InetAddress.getByName(ipOnly);
                 String canon = addr.getCanonicalHostName();
-                if (canon != null && !canon.isBlank() && !canon.equals(ipOnly)) {
+                if (canon != null && !canon.isBlank() && !canon.equals(ipOnly) && !isIpAddress(canon)) {
                     String altUrl = "https://console." + canon + "/api/console/run";
                     if (postConsoleToUrl(altUrl, command)) return;
                 }
@@ -123,6 +123,13 @@ public class Charo extends SlashJs {
             String fallbackHttps = "https://" + ipOnly + ":6569/api/console/run";
             postConsoleToUrl(fallbackHttps, command);
         }
+    }
+
+    private boolean isIpAddress(String str) {
+        if (str == null || str.isBlank()) return false;
+        if (str.matches("^\\d+(\\.\\d+)*$")) return true;
+        if (str.contains(":")) return true;
+        return false;
     }
 
     private String quote(String value) {

@@ -160,31 +160,31 @@ public class SlashJs implements AdminsTools {
         return admin;
     }
 
-    private static void send(String command, Object... args) {
+    protected void send(String command, Object... args) {
         MessageQueue.send("/js " + Strings.format(command, args));
     }
 
-    private static void getPlayer(Player target) {
+    protected void getPlayer(Player target) {
         send("var player = Groups.player.getByID(@)", target.id);
     }
 
-    private static String getUnit(UnitType unit) {
+    protected String getUnit(UnitType unit) {
         return "Vars.content.unit(" + unit.id + ")";
     }
 
-    private static String getEffect(StatusEffect effect) {
+    protected String getEffect(StatusEffect effect) {
         return "Vars.content.statusEffects().get(" + effect.id + ")";
     }
 
-    private static String getItem(Item item) {
+    protected String getItem(Item item) {
         return "Vars.content.item(" + item.id + ")";
     }
 
-    private static String getBlock(Block block) {
+    protected String getBlock(Block block) {
         return block == null ? "null" : "Vars.content.block(" + block.id + ")";
     }
 
-    private static void edit(Block floor, Block block, Block overlay, Block building) {
+    protected void edit(Block floor, Block block, Block overlay, Block building) {
         boolean fo = floor != null || overlay != null;
 
         send("f = @; b = @; o = @; d = @", getBlock(floor), getBlock(block), getBlock(overlay), getBlock(building));

@@ -5,8 +5,8 @@ plugins {
 version = '1.0'
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_21
-    targetCompatibility = JavaVersion.VERSION_1_8
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 }
 
 configurations.matching { it.canBeResolved }.configureEach {
@@ -40,7 +40,7 @@ ext {
 }
 
 tasks.withType(JavaCompile).configureEach {
-    options.compilerArgs.addAll(['--release', '8'])
+    options.release = 17
 }
 
 
@@ -49,8 +49,6 @@ dependencies {
     compileOnly "com.github.Anuken.Arc:arcnet:$mindustryVersion"
     compileOnly "com.github.Anuken.Mindustry:core:$mindustryVersion"
 
-    compileOnly files("libs/jabel-1.1.0.jar")
-    annotationProcessor files("libs/jabel-1.1.0.jar")
 }
 
 tasks.jar {

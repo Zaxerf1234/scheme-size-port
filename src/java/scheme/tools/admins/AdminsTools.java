@@ -22,7 +22,7 @@ import static mindustry.Vars.*;
 
 public interface AdminsTools {
 
-    AdminsTools[] implementations = { new Internal(), new SlashJs(), new Mindurka() };
+    AdminsTools[] implementations = { new Internal(), new SlashJs(), new Charo(), new Mindurka() };
 
     String disabled = bundle.format("admins.notenabled");
     String unavailable = bundle.format("admins.notavailable");

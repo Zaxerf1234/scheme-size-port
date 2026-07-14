@@ -13,6 +13,7 @@ import java.nio.charset.StandardCharsets;
 
 import static arc.Core.*;
 import static mindustry.Vars.*;
+import scheme.tools.MessageQueue;
 
 public class Charo extends SlashJs {
 
@@ -82,9 +83,12 @@ public class Charo extends SlashJs {
 
             int status = connection.getResponseCode();
             if (status < 200 || status >= 300) {
+                MessageQueue.send("[Charo] Console POST failed with status " + status);
                 Main.error(new RuntimeException("Console POST failed with status " + status));
             }
         } catch (Throwable e) {
+            String msg = e == null || e.getMessage() == null ? "unknown" : e.getMessage();
+            MessageQueue.send("[Charo] Console POST error: " + msg);
             Main.error(e);
         }
     }

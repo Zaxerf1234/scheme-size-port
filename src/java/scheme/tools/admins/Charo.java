@@ -11,7 +11,6 @@ import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
-import static arc.Core.*;
 import static mindustry.Vars.*;
 
 public class Charo extends SlashJs {

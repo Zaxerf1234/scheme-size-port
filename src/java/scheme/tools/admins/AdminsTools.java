@@ -1,8 +1,6 @@
 package scheme.tools.admins;
 
-import arc.math.geom.Point2;
 import arc.math.geom.Position;
-import arc.scene.Group;
 import arc.struct.Seq;
 import mindustry.Vars;
 import mindustry.entities.Units;
@@ -14,8 +12,6 @@ import mindustry.type.Item;
 import mindustry.type.UnitType;
 import scheme.tools.DisabledTools;
 import scheme.tools.PositionBuild;
-
-import java.awt.*;
 
 import static arc.Core.*;
 import static mindustry.Vars.*;

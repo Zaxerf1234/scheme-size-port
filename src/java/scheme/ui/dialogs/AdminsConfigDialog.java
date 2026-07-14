@@ -18,7 +18,10 @@ public class AdminsConfigDialog extends BaseDialog {
     public static boolean enabled = settings.getBool("adminsenabled", false);
     public static boolean always = settings.getBool("adminsalways", false);
     public static boolean strict = settings.getBool("adminsstrict", false);
+<<<<<<< HEAD
     public static String charoToken = settings.getString("charotoken", "");
+=======
+>>>>>>> origin/main
     public int way = settings.getInt("adminsway", 0);
 
     public AdminsConfigDialog() {
@@ -30,7 +33,10 @@ public class AdminsConfigDialog extends BaseDialog {
             settings.put("adminsalways", always);
             settings.put("adminsstrict", strict);
             settings.put("adminsway", way);
+<<<<<<< HEAD
             settings.put("charotoken", charoToken);
+=======
+>>>>>>> origin/main
             admins = getTools();
         });
 
@@ -46,6 +52,7 @@ public class AdminsConfigDialog extends BaseDialog {
                 addCheck(table, "@admins.way." + AdminsTools.implementations[i].keyName(), i);
         }).left().row();
 
+<<<<<<< HEAD
         cont.table(tokenTable -> {
             tokenTable.label(() -> bundle.get("admins.way.charo.token")).left().width(140f).padRight(8f);
                 tokenTable.field(charoToken, value -> { charoToken = value; settings.put("charotoken", charoToken); })
@@ -54,6 +61,8 @@ public class AdminsConfigDialog extends BaseDialog {
                     .get();
         }).left().visible(() -> enabled && way == 2).row();
 
+=======
+>>>>>>> origin/main
         cont.labelWrap("@admins.always").padTop(16f).width(320f).row();
         new TextSlider(0, 1, 1, always ? 1 : 0, value -> (always = value == 1) ? "@yes" : "@no").update(slider -> slider.setDisabled(!enabled)).build(cont).width(320f).row();
 

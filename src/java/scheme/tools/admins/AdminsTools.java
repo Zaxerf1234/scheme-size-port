@@ -1,6 +1,12 @@
 package scheme.tools.admins;
 
+<<<<<<< HEAD
 import arc.math.geom.Position;
+=======
+import arc.math.geom.Point2;
+import arc.math.geom.Position;
+import arc.scene.Group;
+>>>>>>> origin/main
 import arc.struct.Seq;
 import mindustry.Vars;
 import mindustry.entities.Units;
@@ -13,12 +19,21 @@ import mindustry.type.UnitType;
 import scheme.tools.DisabledTools;
 import scheme.tools.PositionBuild;
 
+<<<<<<< HEAD
+=======
+import java.awt.*;
+
+>>>>>>> origin/main
 import static arc.Core.*;
 import static mindustry.Vars.*;
 
 public interface AdminsTools {
 
+<<<<<<< HEAD
     AdminsTools[] implementations = { new Internal(), new SlashJs(), new Charo(), new Mindurka() };
+=======
+    AdminsTools[] implementations = { new Internal(), new SlashJs(), new Mindurka() };
+>>>>>>> origin/main
 
     String disabled = bundle.format("admins.notenabled");
     String unavailable = bundle.format("admins.notavailable");

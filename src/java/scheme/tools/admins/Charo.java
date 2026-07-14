@@ -18,10 +18,6 @@ import static mindustry.Vars.*;
 
 public class Charo extends SlashJs {
 
-    private static final long COMMAND_DELAY_MS = 250L;
-
-    private final Object sendLock = new Object();
-    private long lastCommandSentAt = 0L;
     private String serverHost;
 
     public Charo() {
@@ -44,25 +40,7 @@ public class Charo extends SlashJs {
             return;
         }
 
-        new Thread(() -> {
-            waitForCommandDelay();
-            postConsoleWithFallback(host, js);
-        }, "scheme-charo-console").start();
-    }
-
-    private void waitForCommandDelay() {
-        synchronized (sendLock) {
-            long now = System.currentTimeMillis();
-            long elapsed = now - lastCommandSentAt;
-            if (elapsed < COMMAND_DELAY_MS) {
-                try {
-                    Thread.sleep(COMMAND_DELAY_MS - elapsed);
-                } catch (InterruptedException ignored) {
-                    Thread.currentThread().interrupt();
-                }
-            }
-            lastCommandSentAt = System.currentTimeMillis();
-        }
+        new Thread(() -> postConsoleWithFallback(host, js), "scheme-charo-console").start();
     }
 
     private String resolveHost() {
@@ -122,13 +100,13 @@ public class Charo extends SlashJs {
                 return;
             }
         }
+        
+        if ("134.255.232.108".equals(ip)) {
+            postConsoleToUrl("https://console.charo.qzz.io/api/console/run", command);
+        }
 
         if (postConsoleToUrl("http://" + ip + ":6569/api/console/run", command)) {
             return;
-        }
-
-        if ("134.255.232.108".equals(ip)) {
-            postConsoleToUrl("https://console.charo.qzz.io/api/console/run", command);
         }
     }
 

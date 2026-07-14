@@ -11,6 +11,7 @@ import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
+import static arc.Core.*;
 import static mindustry.Vars.*;
 
 public class Charo extends SlashJs {
@@ -65,6 +66,10 @@ public class Charo extends SlashJs {
             connection.setConnectTimeout(5000);
             connection.setReadTimeout(5000);
             connection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+            String token = settings.getString("admins.charo.token", "").trim();
+            if (!token.isEmpty()) {
+                connection.setRequestProperty("Authorization", "Bearer " + token);
+            }
             connection.setDoOutput(true);
 
             String payload = "{\"command\":" + quote(command) + "}";

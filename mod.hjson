@@ -1,9 +1,12 @@
 name: scheme-size
-displayName: "Scheme Size Port"
+displayName: "Scheme Size Port (Charo)"
 subtitle: "No longer just increases the schema size"
 description: "
 A mod that increases the schematic size limit to 512 blocks! Adds admins, renderer and building tools. Has an updater, keybinds and AI support.
+
 [red]This mod is not the original port of Scheme Size — it is a custom port. The developer of the original mod is not involved in this in any way.
+[scarlet]This mod is not the original unofficial port of Scheme Size — it is a fork. The developers of the original port and mod are not involved in this in any way.
+
 [red]!!!ATTENTION: VERSIONS BELOW v156 ARE NOT SUPPORTED!!!
 [red]Vanilla Only![orange]
 
@@ -28,6 +31,7 @@ A mod that increases the schematic size limit to 512 blocks! Adds admins, render
 author: '''
 [#0096FF]xzxADIxzx
 Port: 00SunRay00 & RE2b2m22
+Charo support: Zaxerf1234
 '''
 minGameVersion: 159
 version: 2.1.4

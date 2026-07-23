@@ -14,7 +14,7 @@ import java.net.*;
 
 public class SchemeUpdater {
 
-    public static final String repo = "00SunRay00/scheme-size-port";
+    public static final String repo = "Zaxerf1234/scheme-size-port";
 
     public static LoadedMod mod;
     public static String url;

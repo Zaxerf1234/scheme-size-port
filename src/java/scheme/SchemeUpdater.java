@@ -35,7 +35,7 @@ public class SchemeUpdater {
         Main.log("Checking for updates.");
         Http.get(url, res -> {
             Jval json = Jval.read(res.getResultAsString());
-            String latest = json.getString("tag_name").substring(1);
+            String latest = json.getString("tag_name");
             download = json.get("assets").asArray().get(0).getString("browser_download_url");
 
             if (!latest.equals(mod.meta.version)) ui.showCustomConfirm(

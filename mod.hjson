@@ -34,6 +34,6 @@ Port: 00SunRay00 & RE2b2m22
 Charo support: Zaxerf1234
 '''
 minGameVersion: 159
-version: 2.1.4
+version: 2.1.4-3
 hidden: true
 main: scheme.Main

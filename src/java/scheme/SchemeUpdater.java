@@ -38,22 +38,10 @@ public class SchemeUpdater {
             String latest = json.getString("tag_name").substring(1);
             download = json.get("assets").asArray().get(0).getString("browser_download_url");
 
-            if (isNewer(latest, mod.meta.version)) ui.showCustomConfirm(
+            if (!latest.equals(mod.meta.version)) ui.showCustomConfirm(
                     "@updater.name", bundle.format("updater.info", mod.meta.version, latest),
                     "@updater.load", "@ok", SchemeUpdater::update, () -> {});
         }, Main::error);
-    }
-
-    private static boolean isNewer(String latest, String current) {
-        String[] l = latest.split("\\.");
-        String[] c = current.split("\\.");
-        for (int i = 0; i < Math.max(l.length, c.length); i++) {
-            int lv = i < l.length ? Integer.parseInt(l[i]) : 0;
-            int cv = i < c.length ? Integer.parseInt(c[i]) : 0;
-            if (lv > cv) return true;
-            if (lv < cv) return false;
-        }
-        return false;
     }
 
     public static void update() {
